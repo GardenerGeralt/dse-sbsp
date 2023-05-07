@@ -3,8 +3,12 @@ import numpy as np
 
 
 def main(inp):
-    plt.line_plot(inp["x"], inp["y"])
-    plt.four_plots(inp["x"], inp["y"])
+    labels = ["Trace A", "Trace B", "Trace C", "Trace D"]
+    plt.line_plot(inp["x"], inp["y"], labels=labels, x_title="X Axis", y_title="Y Axis")
+    plt.four_plots(inp["x"], inp["y"], labels=labels, x_titles="X Axis", y_titles=["Y Axis A",
+                                                                                   "Y Axis B",
+                                                                                   "Y Axis C",
+                                                                                   "Y Axis D"])
 
 
 if __name__ == '__main__':

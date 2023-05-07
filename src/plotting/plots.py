@@ -30,7 +30,7 @@ def reformat_data(some_data):
     return some_data
 
 
-def line_plot(x_data, y_data, labels=None, x_title='x axis', y_title='y axis'):
+def line_plot(x_data, y_data, labels=None, x_title='x axis', y_title='y axis') -> None:
     """
     Makes a 2D plot with any number of traces (max. 12).
     Always add explicit labels and axis titles for final version of plot!
@@ -79,7 +79,7 @@ def line_plot(x_data, y_data, labels=None, x_title='x axis', y_title='y axis'):
     fig.show()
 
 
-def four_plots(x_data, y_data, labels=(None, None, None, None), x_titles='x axis', y_titles='y axis'):
+def four_plots(x_data, y_data, labels=(None, None, None, None), x_titles='x axis', y_titles='y axis') -> None:
     """
     Makes a plot with four 2D subplots.
     Always add explicit labels and axis titles for final version of plot!
@@ -113,9 +113,9 @@ def four_plots(x_data, y_data, labels=(None, None, None, None), x_titles='x axis
     if y_len != 4:
         raise ValueError(f"Length of y data is incorrect.\n",
                          f"Expected 4. Got {x_len}.")
-    if (len(x_titles) == 1) or (x_titles is str):
+    if (len(x_titles) == 1) or isinstance(x_titles, str):
         x_titles = np.repeat(x_titles, 4)
-    if (len(y_titles) == 1) or (y_titles is str):
+    if (len(y_titles) == 1) or isinstance(y_titles, str):
         y_titles = np.repeat(y_titles, 4)
 
     fig = make_subplots(rows=2, cols=2)

@@ -12,7 +12,7 @@ class Laser:
         :param z: distance from emitter to receiver [m]
         """
         #  Efficiencies
-        self.dtr_eff = dcrf_eff
+        self.dcrf_eff = dcrf_eff
         #  Input parameters
         self.wavelength = wavelength
         self.w0 = w0
@@ -40,6 +40,12 @@ class Laser:
                f"    Flux density at receiver : {self.flux_z} [W/m^2],\n"
 
     def set_z(self, z):
+        """
+        Args:
+            z: Distance to receiver [m]
+        Returns:
+            nada
+        """
         self.z = z
 
     def calc_beam_div_angle(self):
@@ -48,21 +54,27 @@ class Laser:
         """
         return 2 * self.m2 * self.wavelength / (pi * self.w0)
 
-    def calc_beam_width(self, z):
+    def calc_beam_width(self):
         """
-        Args:
-            z: axial distance from beam waist [m]
         Returns:
             w(z): width of beam at certain z [m]
         """
         # according to https://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=7885601:
-        return self.w0 * sqrt(1 + (self.wavelength * z / (pi * self.w0 ** 2)) ** 2)
+        return self.w0 * sqrt(1 + (self.wavelength * self.z / (pi * self.w0 ** 2)) ** 2)
 
-    def calc_area_z(self, z):
-        return pi * self.calc_beam_width(z) ** 2
+    def calc_area_z(self):
+        """
+        Returns:
+            A(z): beam area at certain z [m^2]
+        """
+        return pi * self.calc_beam_width(self.z) ** 2
 
-    def calc_flux_dens_z(self, z):
-        return self.P_0 / self.calc_area_z(z)
+    def calc_flux_dens_z(self):
+        """
+        Returns:
+            F(z): flux density at certain z [W/m^2]
+        """
+        return self.P_0 / self.calc_area_z(self.z)
 
 
 class Microwave:

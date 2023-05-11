@@ -2,12 +2,12 @@ from numpy import pi, sqrt, tan, exp
 
 
 class Laser:
-    def __init__(self, dcrf_eff=0.3, wavelength=800e-9, w0=0.1, m2=2, P_0=500, z=100000):
+    def __init__(self, dcrf_eff=0.3, wavelength=800e-9, w0=0.1, m2=3, P_0=500, z=100000):
         """
         :param dcrf_eff: DC to RF efficiency [-]
         :param wavelength: wavelength of laser [m]
         :param w0: minimum beam width, very close to transmitter [m]
-        :param m2: M squared, the beam quality factor (deg of var from gaussian beam)
+        :param m2: M squared, the beam quality factor (deg of var from gaussian beam, lower is better)
         :param P_0: beam power just outside transmitter [W]
         :param z: distance from emitter to receiver [m]
         """
@@ -21,8 +21,8 @@ class Laser:
         self.z = z
         # Calculated parameters
         self.calc_beam_div_angle()
-        self.flux_0 = self.calc_flux_dens_z(0)
-        self.flux_z = self.calc_flux_dens_z(self.z)
+        self.flux_0 = self.P_0/(self.w0**2*pi)
+        self.flux_z = self.calc_flux_dens_z()
 
     def __str__(self, ):
         return f"\nLaser:\n" \
@@ -33,8 +33,8 @@ class Laser:
                f"    Minimum beam width (close to transmitter) : {self.w0} [m],\n" \
                f"    Minimum beam area (close to transmitter) : {self.w0**2*pi} [m^2],\n" \
                f"    Beam divergence angle (full) : {self.calc_beam_div_angle()} [rad],\n" \
-               f"    Beam width at receiver: {self.calc_beam_width(self.z)} [m],\n" \
-               f"    Beam area at receiver: {self.calc_area_z(self.z)} [m^2],\n" \
+               f"    Beam width at receiver: {self.calc_beam_width()} [m],\n" \
+               f"    Beam area at receiver: {self.calc_area_z()} [m^2],\n" \
                f"    Power at transmitter : {self.P_0} [W],\n" \
                f"    Flux density at transmitter : {self.flux_0} [W/m^2],\n" \
                f"    Flux density at receiver : {self.flux_z} [W/m^2],\n"
@@ -67,14 +67,14 @@ class Laser:
         Returns:
             A(z): beam area at certain z [m^2]
         """
-        return pi * self.calc_beam_width(self.z) ** 2
+        return pi * self.calc_beam_width() ** 2
 
     def calc_flux_dens_z(self):
         """
         Returns:
             F(z): flux density at certain z [W/m^2]
         """
-        return self.P_0 / self.calc_area_z(self.z)
+        return self.P_0 / self.calc_area_z()
 
 
 class Microwave:

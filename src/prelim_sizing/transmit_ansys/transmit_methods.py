@@ -21,80 +21,97 @@ def calc_wavelength(freq):
     return LIGHT_SPEED / freq
 
 
+def calc_circ_area(diameter):
+    """
+    Args:
+        diameter: diameter of circle [m]
+    Returns:
+        area: area of circle [m2]
+    """
+    return np.pi * (diameter / 2) ** 2
+
+
 class Laser:
-    def __init__(self, dcrf_eff=0.3, wavelength=800e-9, w0=0.1, m2=3, P_0=500, z=100000):
+    def __init__(self, freq, eff_tx, eff_rx, min_beam_width, m_squared, spec_mass):
         """
-        :param dcrf_eff: DC to RF efficiency [-]
-        :param wavelength: wavelength of laser [m]
-        :param w0: minimum beam width, very close to transmitter [m]
-        :param m2: M squared, the beam quality factor (deg of var from gaussian beam, lower is better)
-        :param P_0: beam power just outside transmitter [W]
-        :param z: distance from emitter to receiver [m]
+        :param freq: frequency of laser [Hz]
+        :param eff_tx: transmitter (DC to RF) efficiency [-]
+        :param eff_rx: receiver (RF to DC) efficiency [-]
+        :param min_beam_width: minimum beam width, very close to transmitter [m]
+        :param m_squared: M squared, the beam quality factor (deg of var from gaussian beam, lower is better)
+        :param spec_mass: specific mass of laser [kg/W]
         """
+        #  Frequency and wavelength
+        self.freq = freq
+        self.wavelength = calc_wavelength(freq)
         #  Efficiencies
-        self.dcrf_eff = dcrf_eff
-        #  Input parameters
-        self.wavelength = wavelength
-        self.w0 = w0
-        self.m2 = m2
-        self.P_0 = P_0
-        self.z = z
-        # Calculated parameters
-        self.calc_beam_div_angle()
-        self.flux_0 = self.P_0/(self.w0**2*np.pi)
-        self.flux_z = self.calc_flux_dens_z()
+        self.eff_tx = eff_tx
+        self.eff_rx = eff_rx
+        # Beam parameters
+        self.min_beam_width = min_beam_width
+        self.min_beam_area = calc_circ_area(min_beam_width)
+        self.m_squared = m_squared
+        #  Mass
+        self.spec_mass = spec_mass
+        #  Calculated parameters
+        self.beam_div_angle = self.calc_beam_div_angle()
 
     def __str__(self, ):
         return f"\nLaser:\n" \
                f"------------------\n" \
-               f"    Laser wavelength : {self.wavelength * 10 ** 9} [nm],\n" \
-               f"    Beam quality factor M**2 : {self.m2} [-],\n" \
-               f"    Distance to receiver : {self.z} [m],\n" \
-               f"    Minimum beam width (close to transmitter) : {self.w0} [m],\n" \
-               f"    Minimum beam area (close to transmitter) : {self.w0**2*np.pi} [m^2],\n" \
-               f"    Beam divergence angle (full) : {self.calc_beam_div_angle()} [rad],\n" \
-               f"    Beam width at receiver: {self.calc_beam_width()} [m],\n" \
-               f"    Beam area at receiver: {self.calc_area_z()} [m^2],\n" \
-               f"    Power at transmitter : {self.P_0} [W],\n" \
-               f"    Flux density at transmitter : {self.flux_0} [W/m^2],\n" \
-               f"    Flux density at receiver : {self.flux_z} [W/m^2],\n"
-
-    def set_z(self, z):
-        """
-        Args:
-            z: Distance to receiver [m]
-        Returns:
-            nada
-        """
-        self.z = z
+               f"       Laser frequency : {self.freq:.4e} [Hz],\n" \
+               f"      Laser wavelength : {self.wavelength:.4e} [m],\n" \
+               f"Transmitter efficiency : {self.eff_tx} [-],\n" \
+               f"   Receiver efficiency : {self.eff_rx} [-],\n" \
+               f"    Minimum beam width : {self.min_beam_width:.4e} [m],\n" \
+               f"     Minimum beam area : {self.min_beam_area:.4e} [m2],\n" \
+               f"             M squared : {self.m_squared} [-],\n" \
+               f" Beam divergence angle : {self.beam_div_angle:.4e} [rad]."
 
     def calc_beam_div_angle(self):
         """
         Returns: full divergence angle theta (NOT HALF)
         """
-        return 2 * self.m2 * self.wavelength / (np.pi * self.w0)
+        return 2 * self.m_squared * self.wavelength / (np.pi * self.min_beam_width)
 
-    def calc_beam_width(self):
+    def calc_beam_width(self, distance):
         """
+        Args:
+            distance: distance from transmitter [m]
         Returns:
-            w(z): width of beam at certain z [m]
+            w(distance): beam width at certain distance [m]
         """
         # according to https://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=7885601:
-        return self.w0 * np.sqrt(1 + (self.wavelength * self.z / (np.pi * self.w0 ** 2)) ** 2)
+        return self.min_beam_width * np.sqrt(1 + (self.wavelength * distance / (np.pi * self.min_beam_width ** 2)) ** 2)
 
-    def calc_area_z(self):
+    def flux_density(self, power_tx, distance):
         """
+        Args:
+            power_tx: power at transmitter [W]
+            distance: distance from transmitter [m]
         Returns:
-            A(z): beam area at certain z [m^2]
+            S(distance): flux density at certain distance [W/m2]
         """
-        return np.pi * self.calc_beam_width() ** 2
+        return power_tx / calc_circ_area(self.calc_beam_width(distance))
 
-    def calc_flux_dens_z(self):
+    def calc_power_tx(self, power_rx, distance):
         """
+        Args:
+            power_rx: power at receiver [W]
+            distance: distance from transmitter [m]
         Returns:
-            F(z): flux density at certain z [W/m^2]
+            power_tx: power at transmitter [W]
         """
-        return self.P_0 / self.calc_area_z()
+        return power_rx / (self.eff_rx * self.eff_tx)
+
+    def calc_mass_tx(self, power_tx):
+        """
+        Args:
+            power_tx: power at transmitter [W]
+        Returns:
+            mass_tx: mass of transmitter [kg]
+        """
+        return power_tx * self.spec_mass
 
 
 class Microwave:
@@ -138,7 +155,7 @@ class Microwave:
         Returns:
             free space loss: [dB]
         """
-        return (4 * np.pi * distance / self.wavelength) ** 2
+        return (self.wavelength / (4 * np.pi * distance)) ** 2
 
     def calc_power_tx(self, power_rx, distance):
         """

@@ -7,7 +7,7 @@ def main():
 
 
 if __name__ == "__main__":
-    laser = tm.Laser()
+    laser = tm.Laser(,,
     print(laser.__str__())
 
     # L = np.arange(10000,100000)

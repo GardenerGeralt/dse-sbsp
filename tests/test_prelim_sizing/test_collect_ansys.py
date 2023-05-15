@@ -21,10 +21,10 @@ class TestPhotoCell:
         assert self.test_pv_cell.name == "Test PV Cell"
 
     def test_calc_power_dens(self):
-        assert self.test_pv_cell.calc_power_dens() == 408.3
+        assert self.test_pv_cell._calc_power_dens() == 408.3
 
     def test_calc_spec_power(self):
-        assert self.test_pv_cell.calc_spec_power() == 612.45
+        assert self.test_pv_cell._calc_spec_power() == 612.45
 
     def test_area(self):
         assert (self.test_pv_cell.size(self.test_power_req)[0] - self.correct_area) / self.correct_area < 1e-6

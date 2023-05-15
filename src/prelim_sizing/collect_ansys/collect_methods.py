@@ -20,8 +20,8 @@ class SolarCell:
         self.op_temp = op_temp
         self.name = name
 
-        self.power_dens = self.calc_power_dens()
-        self.spec_power = self.calc_spec_power()
+        self.power_dens = self._calc_power_dens()
+        self.spec_power = self._calc_spec_power()
 
     def __str__(self):
         return f"\n{self.name}:\n" \
@@ -34,10 +34,10 @@ class SolarCell:
                f"       Specific power: {self.spec_power:.4e} [W/kg],\n" \
                f"Operating temperature: {self.op_temp:.4e} [K]."
 
-    def calc_power_dens(self):
+    def _calc_power_dens(self):
         return SOLAR_IRRADIANCE_1AU * self.concentration * self.eff
 
-    def calc_spec_power(self):
+    def _calc_spec_power(self):
         return SOLAR_IRRADIANCE_1AU * self.concentration * self.eff * self.cell_area / self.av_mass
 
     def size(self, power_req):

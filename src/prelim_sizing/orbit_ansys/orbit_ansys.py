@@ -100,8 +100,8 @@ class OrbitFromPeri(Orbit):
                f"           Time in view: {sec2hrs(self.view_time):.3f} [hrs],\n" \
                f"           Percentage in view: {percentage(self.view_time,self.period):.2f} [%],\n" \
                f"           Average altitude while in view: {self.view_altitude:.2f} [km].\n" \
-               f"           Time in view: {sec2hrs(self.eclipse_time):.3f} [hrs],\n" \
-               f"           Percentage in view: {percentage(self.eclipse_time, self.period):.2f} [%]."
+               f"           Time without eclipse: {sec2hrs(self.eclipse_time):.3f} [hrs],\n" \
+               f"           Percentage without eclipse: {percentage(self.eclipse_time, self.period):.2f} [%]."
 
     def calc_distance(self):
         semi_maj_ax = (MOON_RADIUS + self.pericenter) / (1 - self.eccentricity)
@@ -129,8 +129,8 @@ class OrbitFromApo(Orbit):
                f"           Time in view: {sec2hrs(self.view_time):.3f} [hrs],\n" \
                f"           Percentage in view: {percentage(self.view_time,self.period):.2f} [%],\n" \
                f"           Average altitude while in view: {self.view_altitude:.2f} [km],\n" \
-               f"           Time in view: {sec2hrs(self.eclipse_time):.3f} [hrs],\n" \
-               f"           Percentage in view: {percentage(self.eclipse_time, self.period):.2f} [%]."
+               f"           Time without eclipse: {sec2hrs(self.eclipse_time):.3f} [hrs],\n" \
+               f"           Percentage without eclipse: {percentage(self.eclipse_time, self.period):.2f} [%]."
 
     def calc_distance(self):
         semi_maj_ax = (MOON_RADIUS + self.apocenter) / (1 + self.eccentricity)

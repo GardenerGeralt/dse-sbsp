@@ -65,11 +65,12 @@ def main(designs, power_rx):
         orbit = create_orbit(design)
         launcher = create_launcher(design)
 
-        contact_time, contact_altitude = orbit.calc_view()
+        contact_time_fraction = orbit.view_time / orbit.period
+        contact_altitude = orbit.view_altitude
         power_tx = transmitter.calc_power_tx(power_rx, contact_altitude)
         mass_tx = transmitter.calc_mass_tx(power_tx)
         _, mass_collect = collector.size(power_tx, total=True)
-        dry_mass = (mass_tx + mass_collect) * EPS2DRY
+        dry_mass = (mass_tx + mass_collect) * EPS2DRY / contact_time_fraction
         wet_mass = dry_mass * DRY2WET
         cost_total = launcher.cost(wet_mass)
         design_df = pd.concat([design_df, pd.DataFrame({"Concept name": [design[0]],

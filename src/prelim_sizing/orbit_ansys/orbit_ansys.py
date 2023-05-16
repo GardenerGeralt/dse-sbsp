@@ -8,8 +8,10 @@ MOON_GRAV_PARAM = 4.90486959e12     # [m^3/s^2]
 def sec2hrs(value):
     return value / 3600
 
-def percentage(value1, value2):
-    return value1 / value2 * 100
+
+def percentage(part, total):
+    return part / total * 100
+
 
 def m2km(value):
     return value/1000
@@ -87,7 +89,8 @@ class Orbit:
             time_point = times_in_view[i]
             mean_anomaly = time_point / self.period * 2 * np.pi
             eccentric_anomaly = fsolve(lambda E: E - self.eccentricity * np.sin(E) - mean_anomaly, mean_anomaly)[0]
-            theta = 2 * np.arctan2(np.tan(eccentric_anomaly / 2), np.sqrt((1 - self.eccentricity) / (1 + self.eccentricity)))
+            theta = 2 * np.arctan2(np.tan(eccentric_anomaly / 2),
+                                   np.sqrt((1 - self.eccentricity) / (1 + self.eccentricity)))
             alts_in_view[i] = self.semi_maj_ax * (1 - self.eccentricity ** 2) / (1 + self.eccentricity * np.cos(theta)) - MOON_RADIUS
         return np.average(alts_in_view)
 
@@ -100,25 +103,29 @@ class OrbitFromPeri(Orbit):
     def __init__(self, pericenter, eccentricity, inclination, name="Orbit"):
         self.pericenter = pericenter
         self.eccentricity = eccentricity
-        self.semi_maj_ax, self.apocenter = self._calc_distance()
+        self.semi_maj_ax = self._calc_semi_maj_ax()
+        self.apocenter = self._calc_apocenter()
 
         super().__init__(self.semi_maj_ax, self.pericenter, self.apocenter, self.eccentricity, inclination, name)
 
-    def _calc_distance(self):
-        semi_maj_ax = (MOON_RADIUS + self.pericenter) / (1 - self.eccentricity)
-        apocenter = semi_maj_ax * (1 + self.eccentricity) - MOON_RADIUS
-        return semi_maj_ax, apocenter
+    def _calc_semi_maj_ax(self):
+        return (MOON_RADIUS + self.pericenter) / (1 - self.eccentricity)
+
+    def _calc_apocenter(self):
+        return self.semi_maj_ax * (1 + self.eccentricity) - MOON_RADIUS
 
 
 class OrbitFromApo(Orbit):
     def __init__(self, apocenter, eccentricity, inclination, name="Orbit"):
         self.apocenter = apocenter
         self.eccentricity = eccentricity
-        self.semi_maj_ax, self.pericenter = self._calc_distance()
+        self.semi_maj_ax = self._calc_semi_maj_ax()
+        self.pericenter = self._calc_pericenter()
 
         super().__init__(self.semi_maj_ax, self.pericenter, self.apocenter, self.eccentricity, inclination, name)
 
-    def _calc_distance(self):
-        semi_maj_ax = (MOON_RADIUS + self.apocenter) / (1 + self.eccentricity)
-        pericenter = semi_maj_ax * (1 - self.eccentricity) - MOON_RADIUS
-        return semi_maj_ax, pericenter
+    def _calc_semi_maj_ax(self):
+        return (MOON_RADIUS + self.apocenter) / (1 + self.eccentricity)
+
+    def _calc_pericenter(self):
+        return self.semi_maj_ax * (1 - self.eccentricity) - MOON_RADIUS

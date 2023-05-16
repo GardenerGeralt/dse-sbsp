@@ -1,4 +1,5 @@
 import pytest
+import numpy as np
 from src.prelim_sizing.collect_ansys import collect_methods as cm
 
 
@@ -25,10 +26,10 @@ class TestPhotoCell:
         assert self.test_pv_cell._calc_spec_power() == 612.45
 
     def test_area(self):
-        assert (self.test_pv_cell.size(self.test_power_req)[0] - self.correct_area) / self.correct_area < 1e-6
+        assert np.isclose(self.test_pv_cell.size(self.test_power_req)[0], self.correct_area, rtol=1e-6)
 
     def test_mass(self):
-        assert (self.test_pv_cell.size(self.test_power_req)[1] - self.correct_mass) / self.correct_mass < 1e-6
+        assert np.isclose(self.test_pv_cell.size(self.test_power_req)[1], self.correct_mass, rtol=1e-6)
 
 
 class TestConcentrator:

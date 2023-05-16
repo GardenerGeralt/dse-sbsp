@@ -1,3 +1,4 @@
+import numpy as np
 
 
 class Launcher:
@@ -14,7 +15,7 @@ class Launcher:
         :param payload_mass:
         :return:
         """
-        return payload_mass / self.max_launch_mass
+        return np.ceil(payload_mass / self.max_launch_mass)
 
     def cost(self, payload_mass):
         """

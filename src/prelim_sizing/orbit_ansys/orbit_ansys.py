@@ -101,11 +101,11 @@ class OrbitFromPeri(Orbit):
     def __init__(self, pericenter, eccentricity, inclination, name="Orbit"):
         self.pericenter = pericenter
         self.eccentricity = eccentricity
-        self.semi_maj_ax, self.apocenter = self.calc_distance()
+        self.semi_maj_ax, self.apocenter = self._calc_distance()
 
         super().__init__(self.semi_maj_ax, self.pericenter, self.apocenter, self.eccentricity, inclination, name)
 
-    def calc_distance(self):
+    def _calc_distance(self):
         semi_maj_ax = (MOON_RADIUS + self.pericenter) / (1 - self.eccentricity)
         apocenter = semi_maj_ax * (1 + self.eccentricity) - MOON_RADIUS
         return semi_maj_ax, apocenter
@@ -115,11 +115,11 @@ class OrbitFromApo(Orbit):
     def __init__(self, apocenter, eccentricity, inclination, name="Orbit"):
         self.apocenter = apocenter
         self.eccentricity = eccentricity
-        self.semi_maj_ax, self.pericenter = self.calc_distance()
+        self.semi_maj_ax, self.pericenter = self._calc_distance()
 
         super().__init__(self.semi_maj_ax, self.pericenter, self.apocenter, self.eccentricity, inclination, name)
 
-    def calc_distance(self):
+    def _calc_distance(self):
         semi_maj_ax = (MOON_RADIUS + self.apocenter) / (1 + self.eccentricity)
         pericenter = semi_maj_ax * (1 - self.eccentricity) - MOON_RADIUS
         return semi_maj_ax, pericenter

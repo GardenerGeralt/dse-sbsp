@@ -80,7 +80,7 @@ def main(designs, power_rx):
 
 
 if __name__ == "__main__":
-    power_req = 1e6
+    power_req = 1e6     # [W]
 
     concepts = pd.read_csv("concepts.csv", index_col=0, header=0)
     print(main(concepts, power_req))

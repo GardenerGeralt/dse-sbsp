@@ -1,7 +1,7 @@
 import pytest
 from numpy import pi, abs
 from src.prelim_sizing.transmit_ansys import transmit_methods as tm
-
+import numpy as np
 
 class TestGeneral:
     def test_db2lin(self):
@@ -53,15 +53,26 @@ class TestLaser:
 
 
 class TestMicrowave:
+    test_transmitter = tm.Microwave(5.8e9, 0.855, 0.83, 60, 60, 1.28e-3)
+    distance = 20000
+    power_rx = 1e6
+    correct_fpl = 4.23552064e-14
+    correct_power_tx = 33269708.058541
+    correct_mass = 42585.226314932
     def test_init(self):
-        ...
+        assert self.test_transmitter.freq == 5.8e9
+        assert self.test_transmitter.eff_tx == 0.855
+        assert self.test_transmitter.eff_rx == 0.83
+        assert self.test_transmitter.db_gain_rx == 60
+        assert self.test_transmitter.db_gain_tx == 60
+        assert self.test_transmitter.spec_mass == 1.28e-3
 
     def test_free_space_loss(self):
-        ...
+        assert (np.abs(self.correct_fpl- self.test_transmitter.free_space_loss(self.distance)))/self.correct_fpl < 1e-6
 
     def test_calc_power_tx(self):
-        ...
+        assert (np.abs(self.correct_power_tx - self.test_transmitter.calc_power_tx(self.power_rx, self.distance)))/self.correct_power_tx < 1e-6
 
     def test_calc_mass_tx(self):
-        ...
+        assert (np.abs(self.correct_mass - self.test_transmitter.calc_mass_tx(self.correct_power_tx)))/self.correct_mass < 1e-6
 

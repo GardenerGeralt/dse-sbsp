@@ -1,6 +1,4 @@
 import pytest
-
-from prelim_sizing.collect_ansys.collect_methods import Concentrator
 from src.prelim_sizing.collect_ansys import collect_methods as cm
 
 

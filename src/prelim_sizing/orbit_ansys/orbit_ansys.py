@@ -13,21 +13,38 @@ def percentage(value1, value2):
 
 
 class Orbit:
-    def __init__(self, semi_maj_ax, eccentricity, inclination, name="Orbit"):
+    def __init__(self, semi_maj_ax, pericenter, apocenter, eccentricity, inclination, name="Orbit"):
         """
         :param semi_maj_ax: orbit semi-major axis [m]
         :param eccentricity: orbit eccentricity [-]
         :param inclination: orbit inclination [deg]
         :param name: name of the orbit
         """
+        self.semi_maj_ax = semi_maj_ax
+        self.pericenter = pericenter
+        self.apocenter = apocenter
         self.eccentricity = eccentricity
         self.inclination = inclination
         self.name = name
 
-        self.semi_maj_ax = semi_maj_ax
         self.period = self.calc_period()
         self.view_time, self.view_altitude = self.calc_view()
         self.eclipse_time = self.calc_eclipse()
+
+    def __str__(self):
+        return f"\n{self.name}:\n" \
+               f"------------------\n" \
+               f"           Semi-major axis: {self.semi_maj_ax:.2f} [m],\n" \
+               f"           Eccentricity: {self.eccentricity} [-],\n" \
+               f"           Inclination: {self.inclination} [deg],\n" \
+               f"           Pericenter altitude: {self.pericenter:.2f} [m],\n" \
+               f"           Apocenter altitude: {self.apocenter:.2f} [m],\n" \
+               f"           Orbital period: {sec2hrs(self.period):.3f} [hrs],\n" \
+               f"           Time in view: {sec2hrs(self.view_time):.3f} [hrs],\n" \
+               f"           Percentage in view: {percentage(self.view_time, self.period):.2f} [%],\n" \
+               f"           Average altitude while in view: {self.view_altitude:.2f} [m].\n" \
+               f"           Time without eclipse: {sec2hrs(self.eclipse_time):.3f} [hrs],\n" \
+               f"           Percentage without eclipse: {percentage(self.eclipse_time, self.period):.2f} [%]."
 
     def calc_period(self):
         return 2 * np.pi * np.sqrt(self.semi_maj_ax ** 3 / MOON_GRAV_PARAM)
@@ -86,22 +103,7 @@ class OrbitFromPeri(Orbit):
         self.eccentricity = eccentricity
         self.semi_maj_ax, self.apocenter = self.calc_distance()
 
-        super().__init__(self.semi_maj_ax, eccentricity, inclination, name)
-
-    def __str__(self):
-        return f"\n{self.name}:\n" \
-               f"------------------\n" \
-               f"           Semi-major axis: {self.semi_maj_ax:.2f} [m],\n" \
-               f"           Eccentricity: {self.eccentricity} [-],\n" \
-               f"           Inclination: {self.inclination} [deg],\n" \
-               f"           Pericenter altitude: {self.pericenter:.2f} [m],\n" \
-               f"           Apocenter altitude: {self.apocenter:.2f} [m],\n" \
-               f"           Orbital period: {sec2hrs(self.period):.3f} [hrs],\n" \
-               f"           Time in view: {sec2hrs(self.view_time):.3f} [hrs],\n" \
-               f"           Percentage in view: {percentage(self.view_time,self.period):.2f} [%],\n" \
-               f"           Average altitude while in view: {self.view_altitude:.2f} [m].\n" \
-               f"           Time without eclipse: {sec2hrs(self.eclipse_time):.3f} [hrs],\n" \
-               f"           Percentage without eclipse: {percentage(self.eclipse_time, self.period):.2f} [%]."
+        super().__init__(self.semi_maj_ax, self.pericenter, self.apocenter, self.eccentricity, inclination, name)
 
     def calc_distance(self):
         semi_maj_ax = (MOON_RADIUS + self.pericenter) / (1 - self.eccentricity)
@@ -115,22 +117,7 @@ class OrbitFromApo(Orbit):
         self.eccentricity = eccentricity
         self.semi_maj_ax, self.pericenter = self.calc_distance()
 
-        super().__init__(self.semi_maj_ax, eccentricity, inclination, name)
-
-    def __str__(self):
-        return f"\n{self.name}:\n" \
-               f"------------------\n" \
-               f"           Semi-major axis: {self.semi_maj_ax:.2f} [m],\n" \
-               f"           Eccentricity: {self.eccentricity} [-],\n" \
-               f"           Inclination: {self.inclination} [deg],\n" \
-               f"           Pericenter altitude: {self.pericenter:.2f} [m],\n" \
-               f"           Apocenter altitude: {self.apocenter:.2f} [m],\n" \
-               f"           Orbital period: {sec2hrs(self.period):.3f} [hrs],\n" \
-               f"           Time in view: {sec2hrs(self.view_time):.3f} [hrs],\n" \
-               f"           Percentage in view: {percentage(self.view_time,self.period):.2f} [%],\n" \
-               f"           Average altitude while in view: {self.view_altitude:.2f} [m],\n" \
-               f"           Time without eclipse: {sec2hrs(self.eclipse_time):.3f} [hrs],\n" \
-               f"           Percentage without eclipse: {percentage(self.eclipse_time, self.period):.2f} [%]."
+        super().__init__(self.semi_maj_ax, self.pericenter, self.apocenter, self.eccentricity, inclination, name)
 
     def calc_distance(self):
         semi_maj_ax = (MOON_RADIUS + self.apocenter) / (1 + self.eccentricity)

@@ -1,5 +1,6 @@
 Orbit name,Pericenter [m],Eccentricity [-],Inclination [deg]
-Frozen low 84.8deg,110000,0.09547,84.8
-Frozen low i78 p110,110000,0.,78.0
-Frozen low i78 p20,20000,0.,78.0
-Frozen elliptical,750000,0.5,48.46
+Frozen low imax,110000,0.09547,84.8
+Frozen low i78 p110 e0,110000,0.,78.0
+Frozen low i78 p20 e0,20000,0.,78.0
+Frozen elliptical e0.5,750000,0.5,47.87
+Frozen elliptical e0.45,750000,0.45,46.23

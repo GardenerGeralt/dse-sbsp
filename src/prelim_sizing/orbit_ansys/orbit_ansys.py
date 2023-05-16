@@ -7,9 +7,11 @@ MOON_GRAV_PARAM = 4.90486959e12     # [m^3/s^2]
 def sec2hrs(value):
     return value / 3600
 
-
 def percentage(value1, value2):
     return value1 / value2 * 100
+
+def m2km(value):
+    return value/1000
 
 
 class Orbit:
@@ -34,15 +36,15 @@ class Orbit:
     def __str__(self):
         return f"\n{self.name}:\n" \
                f"------------------\n" \
-               f"           Semi-major axis: {self.semi_maj_ax:.2f} [m],\n" \
+               f"           Semi-major axis: {m2km(self.semi_maj_ax):.2f} [km],\n" \
                f"           Eccentricity: {self.eccentricity} [-],\n" \
                f"           Inclination: {self.inclination} [deg],\n" \
-               f"           Pericenter altitude: {self.pericenter:.2f} [m],\n" \
-               f"           Apocenter altitude: {self.apocenter:.2f} [m],\n" \
+               f"           Pericenter altitude: {m2km(self.pericenter):.2f} [km],\n" \
+               f"           Apocenter altitude: {m2km(self.apocenter):.2f} [km],\n" \
                f"           Orbital period: {sec2hrs(self.period):.3f} [hrs],\n" \
                f"           Time in view: {sec2hrs(self.view_time):.3f} [hrs],\n" \
                f"           Percentage in view: {percentage(self.view_time, self.period):.2f} [%],\n" \
-               f"           Average altitude while in view: {self.view_altitude:.2f} [m].\n" \
+               f"           Average altitude while in view: {m2km(self.view_altitude):.2f} [km].\n" \
                f"           Time without eclipse: {sec2hrs(self.eclipse_time):.3f} [hrs],\n" \
                f"           Percentage without eclipse: {percentage(self.eclipse_time, self.period):.2f} [%]."
 

@@ -45,8 +45,7 @@ def create_transmitter(design):
 def create_orbit(design):
     name = design[1]["Orbit"]
     orbit = ORBITS.loc[name]
-    orbit = oa.OrbitFromPeri(orbit["Pericenter [m]"], orbit["Eccentricity [-]"],
-                             orbit["Inclination [deg]"], name=name)
+    orbit = oa.OrbitFromPeri(orbit["Pericenter [m]"], orbit["Eccentricity [-]"], orbit["Inclination [deg]"], name=name)
     return orbit
 
 

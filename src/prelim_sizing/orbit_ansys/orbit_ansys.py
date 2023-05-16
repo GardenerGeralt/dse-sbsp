@@ -16,7 +16,7 @@ def m2km(value):
 
 
 class Orbit:
-    def __init__(self, semi_maj_ax, pericenter, apocenter, eccentricity, inclination, name="Orbit"):
+    def __init__(self, semi_maj_ax, h_peri, h_apo, eccentricity, inclination, name="Orbit"):
         """
         :param semi_maj_ax: orbit semi-major axis [m]
         :param eccentricity: orbit eccentricity [-]
@@ -24,8 +24,8 @@ class Orbit:
         :param name: name of the orbit
         """
         self.semi_maj_ax = semi_maj_ax
-        self.pericenter = pericenter
-        self.apocenter = apocenter
+        self.h_peri = h_peri
+        self.h_apo = h_apo
         self.eccentricity = eccentricity
         self.inclination = inclination
         self.name = name
@@ -41,8 +41,8 @@ class Orbit:
                f"           Semi-major axis: {m2km(self.semi_maj_ax):.2f} [km],\n" \
                f"           Eccentricity: {self.eccentricity} [-],\n" \
                f"           Inclination: {self.inclination} [deg],\n" \
-               f"           Pericenter altitude: {m2km(self.pericenter):.2f} [km],\n" \
-               f"           Apocenter altitude: {m2km(self.apocenter):.2f} [km],\n" \
+               f"           Pericenter altitude: {m2km(self.h_peri):.2f} [km],\n" \
+               f"           Apocenter altitude: {m2km(self.h_apo):.2f} [km],\n" \
                f"           Orbital period: {sec2hrs(self.period):.3f} [hrs],\n" \
                f"           Time in view: {sec2hrs(self.view_time):.3f} [hrs],\n" \
                f"           Percentage in view: {percentage(self.view_time, self.period):.2f} [%],\n" \
@@ -97,28 +97,28 @@ class Orbit:
 
 
 class OrbitFromPeri(Orbit):
-    def __init__(self, pericenter, eccentricity, inclination, name="Orbit"):
-        self.pericenter = pericenter
+    def __init__(self, h_peri, eccentricity, inclination, name="Orbit"):
+        self.h_peri = h_peri
         self.eccentricity = eccentricity
-        self.semi_maj_ax, self.apocenter = self._calc_distance()
+        self.semi_maj_ax, self.h_apo = self._calc_distance()
 
-        super().__init__(self.semi_maj_ax, self.pericenter, self.apocenter, self.eccentricity, inclination, name)
+        super().__init__(self.semi_maj_ax, self.h_peri, self.h_apo, self.eccentricity, inclination, name)
 
     def _calc_distance(self):
-        semi_maj_ax = (MOON_RADIUS + self.pericenter) / (1 - self.eccentricity)
-        apocenter = semi_maj_ax * (1 + self.eccentricity) - MOON_RADIUS
-        return semi_maj_ax, apocenter
+        semi_maj_ax = (MOON_RADIUS + self.h_peri) / (1 - self.eccentricity)
+        h_apo = semi_maj_ax * (1 + self.eccentricity) - MOON_RADIUS
+        return semi_maj_ax, h_apo
 
 
 class OrbitFromApo(Orbit):
-    def __init__(self, apocenter, eccentricity, inclination, name="Orbit"):
-        self.apocenter = apocenter
+    def __init__(self, h_apo, eccentricity, inclination, name="Orbit"):
+        self.h_apo = h_apo
         self.eccentricity = eccentricity
-        self.semi_maj_ax, self.pericenter = self._calc_distance()
+        self.semi_maj_ax, self.h_peri = self._calc_distance()
 
-        super().__init__(self.semi_maj_ax, self.pericenter, self.apocenter, self.eccentricity, inclination, name)
+        super().__init__(self.semi_maj_ax, self.h_peri, self.h_apo, self.eccentricity, inclination, name)
 
     def _calc_distance(self):
-        semi_maj_ax = (MOON_RADIUS + self.apocenter) / (1 + self.eccentricity)
-        pericenter = semi_maj_ax * (1 - self.eccentricity) - MOON_RADIUS
-        return semi_maj_ax, pericenter
+        semi_maj_ax = (MOON_RADIUS + self.h_apo) / (1 + self.eccentricity)
+        h_peri = semi_maj_ax * (1 - self.eccentricity) - MOON_RADIUS
+        return semi_maj_ax, h_peri

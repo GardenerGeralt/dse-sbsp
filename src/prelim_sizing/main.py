@@ -58,7 +58,7 @@ def create_launcher(design):
 
 
 def main(designs, power_rx):
-    design_df = pd.DataFrame(columns=["Concept name", "Total mass [kg]", "Total cost [M$]"])
+    design_df = pd.DataFrame(columns=["Concept name", "Total mass [kg]", "Total cost [M$]", "N. Launches"])
     for design in designs.iterrows():
         collector = create_collector(design)
         transmitter = create_transmitter(design)
@@ -75,7 +75,8 @@ def main(designs, power_rx):
         cost_total = launcher.cost(wet_mass)
         design_df = pd.concat([design_df, pd.DataFrame({"Concept name": [design[0]],
                                                         "Total mass [kg]": [wet_mass],
-                                                        "Total cost [M$]": [cost_total]})], ignore_index=True)
+                                                        "Total cost [M$]": [cost_total],
+                                                        "N. Launches": [launcher.n_launches(wet_mass)]})], ignore_index=True)
     return design_df
 
 

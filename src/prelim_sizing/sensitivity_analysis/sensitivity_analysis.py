@@ -43,15 +43,12 @@ def remove_w(weights, score):
     return np.array(overall_score)
 
 
-print(remove_w(np.array([0.3, 0.15, 0.2, 0.17, 0.18]), np.array([3, 1, 2, 2, 5])))
-
-
 def winner(concepts, title):
     # winners = np.argmax(np.array([concept for concept in concepts]), axis=0)
     winners = np.argmax(concepts, axis=0)
 
-    hist, bins = np.histogram(winners, bins=range(len(concepts) + 1))
-    plt.bar(bins[:-1], hist, align='center')
+    hist, bins = np.histogram(winners, bins=range(1, len(concepts) + 2))
+    plt.bar(bins[1:], hist, align='center')
     plt.xticks(range(len(concepts) + 1))
     plt.xlabel('Concepts')
     plt.ylabel('Winning frequency')
@@ -60,16 +57,17 @@ def winner(concepts, title):
 
 
 ###--------------DEMO--------------###
-ws = np.array([0.3, 0.15, 0.2, 0.17, 0.18])  # array of normalized weights
+ws = np.array([0.25, 0.15, 0.2, 0.3, 0.1])  # array of normalized weights
 scores = np.array(
-    [np.array([5, 4, 3, 3, 2]), np.array([5, 4, 1, 4, 2]), np.array([5, 4, 4, 1, 1]), np.array([4, 4, 3, 3, 4]),
-     np.array([4, 4, 2, 5, 3])])
+    [np.array([1, 4, 4, 1, 2]), np.array([1, 4, 3, 1, 2]), np.array([3, 2, 3, 3, 3]), np.array([3, 2, 1, 2, 3]),
+     np.array([3, 2, 2, 3, 3])])
 '''array containing the arrays of the individual score for each concept, in this case in a scale from 1 to 5.'''
 
 result_change = []
 result_remove = []
+n_sim = 50
 for score in scores:
-    result_change.append(change_w(ws, 50, score))
+    result_change.append(change_w(ws, n_sim, score))
     result_remove.append(remove_w(ws, score))
 
 result_change = np.array(result_change)

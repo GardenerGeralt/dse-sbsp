@@ -58,7 +58,8 @@ def create_launcher(design):
 
 
 def main(designs, power_rx):
-    design_df = pd.DataFrame(columns=["Concept name", "Total mass [kg]", "Total cost [M$]", "N. Launches"])
+    design_df = pd.DataFrame(columns=["Concept name", "Total mass [kg]", "Total cost [M$]",
+                                      "Nr. of launches", "Contact altitude [m]", "RX beam width [m]"])
     for design in designs.iterrows():
         collector = create_collector(design)
         transmitter = create_transmitter(design)
@@ -73,10 +74,18 @@ def main(designs, power_rx):
         dry_mass = (mass_tx + mass_collect) * EPS2DRY / contact_time_fraction
         wet_mass = dry_mass * DRY2WET
         cost_total = launcher.cost(wet_mass)
+
+        if isinstance(transmitter, tm.Laser):
+            receiver_width = transmitter.calc_beam_width(contact_altitude)
+        else:
+            receiver_width = "N/A"
+
         design_df = pd.concat([design_df, pd.DataFrame({"Concept name": [design[0]],
                                                         "Total mass [kg]": [wet_mass],
                                                         "Total cost [M$]": [cost_total],
-                                                        "N. Launches": [launcher.n_launches(wet_mass)]})], ignore_index=True)
+                                                        "Nr. of launches": [launcher.n_launches(wet_mass)],
+                                                        "Contact altitude [m]": [contact_altitude],
+                                                        "RX beam width [m]": [receiver_width]})], ignore_index=True)
     return design_df
 
 
@@ -84,4 +93,5 @@ if __name__ == "__main__":
     power_req = 1e6     # [W]
 
     concepts = pd.read_csv("concepts.csv", index_col=0, header=0)
-    print(main(concepts, power_req))
+    with pd.option_context('display.max_rows', None, 'display.max_columns', None, 'display.precision', 3):
+        print(main(concepts, power_req))

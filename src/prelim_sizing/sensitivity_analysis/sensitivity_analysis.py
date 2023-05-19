@@ -44,10 +44,19 @@ def remove_w(weights, score):
 
 
 def winner(concepts, title):
-    # winners = np.argmax(np.array([concept for concept in concepts]), axis=0)
     winners = np.argmax(concepts, axis=0)
 
-    hist, bins = np.histogram(winners, bins=range(1, len(concepts) + 2))
+    """count3 = 0
+    count5 = 0
+    for _ in winners:
+        if (_ + 1) == 3:
+            count3 += 1
+        else:
+            count5 += 1
+
+    print(count3, count5)"""
+
+    hist, bins = np.histogram(winners, bins=range(1, len(concepts) + 1))
     plt.bar(bins[1:], hist, align='center')
     plt.xticks(range(len(concepts) + 1))
     plt.xlabel('Concepts')
@@ -61,11 +70,11 @@ ws = np.array([0.25, 0.15, 0.2, 0.3, 0.1])  # array of normalized weights
 scores = np.array(
     [np.array([1, 4, 4, 1, 2]), np.array([1, 4, 3, 1, 2]), np.array([3, 2, 3, 3, 3]), np.array([3, 2, 1, 2, 3]),
      np.array([3, 2, 2, 3, 3])])
-'''array containing the arrays of the individual score for each concept, in this case in a scale from 1 to 5.'''
+"""array containing the arrays of the individual score for each concept, in this case in a scale from 1 to 5."""
 
 result_change = []
 result_remove = []
-n_sim = 50
+n_sim = 10000
 for score in scores:
     result_change.append(change_w(ws, n_sim, score))
     result_remove.append(remove_w(ws, score))

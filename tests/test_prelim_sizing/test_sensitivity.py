@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 
 
-def weight_sum_change(weights):
+def weight_change(weights):
     old_weights = np.copy(weights)
     for i in range(len(weights)):
         new_weights = np.copy(weights)
@@ -17,15 +17,20 @@ def weight_sum_change(weights):
         new_weights_array = old_weights * ratio
         new_weights_array[i] = new_weights[i]
 
-    return sum(new_weights_array)
+    return new_weights_array
 
 
 def test_weight_sum_change():
     weights = np.random.dirichlet(np.ones(5), size=1)[0]
-    assert weight_sum_change(weights) - 1 < 1e-6
+    assert sum(weight_change(weights)) - 1 < 1e-6
 
 
-def weight_sum_remove(weights):
+def test_len_wight_change():
+    weights = np.random.dirichlet(np.ones(5), size=1)[0]
+    assert len(weight_change(weights)) == len(weights)
+
+
+def weight_remove(weights):
     for i in range(len(weights)):
         new_weights = np.copy(weights)
         new_weights = np.delete(new_weights, i)
@@ -34,9 +39,42 @@ def weight_sum_remove(weights):
         ratio = 1 / sum_changed_w
         new_weights_array = new_weights * ratio
 
-    return sum(new_weights_array)
+    return new_weights_array
 
 
 def test_weight_sum_remove():
     weights = np.random.dirichlet(np.ones(5), size=1)[0]
-    assert weight_sum_remove(weights) - 1 < 1e-6
+    assert sum(weight_remove(weights)) - 1 < 1e-6
+
+
+def test_len_wight_remove():
+    weights = np.random.dirichlet(np.ones(5), size=1)[0]
+    assert len(weight_remove(weights)) == (len(weights) - 1)
+
+
+def final_score(weights, score):
+    return weights * score
+
+
+def test_len_final_score():
+    weights = np.array([0.3, 0.2, 0.4, 0.1])
+    score = np.array([1, 2, 3, 4])
+    assert len(final_score(weights, score)) == 4
+
+
+def test_score():
+    weights = np.array([0.3, 0.2, 0.4, 0.1])
+    score = np.array([1, 2, 3, 4])
+    hand_score = np.array([0.3, 0.4, 1.2, 0.4])
+    assert np.allclose(final_score(weights, score), hand_score)
+
+
+def winner(concepts):
+    return np.argmax(concepts, axis=0)
+
+
+def test_winner():
+    concepts = np.array([[2], [3.4], [4.2], [1], [1.89]])
+    winner_concept = 2
+    assert winner(concepts) == winner_concept
+

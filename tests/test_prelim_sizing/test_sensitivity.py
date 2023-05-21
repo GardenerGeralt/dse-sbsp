@@ -74,7 +74,7 @@ def winner(concepts):
 
 
 def test_winner():
-    concepts = np.array([[2], [3.4], [4.2], [1], [1.89]])
-    winner_concept = 2
-    assert winner(concepts) == winner_concept
+    concepts = np.array([[2, 4], [3.4, 3], [4.2, 2], [1, 1], [1.89, 0]])
+    winner_concept = np.array([2, 0])
+    assert np.alltrue(winner(concepts) == winner_concept)
 

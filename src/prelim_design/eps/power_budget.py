@@ -30,29 +30,33 @@ class PowerBudget:
 
 
 class Batteries:
-    def __init__(self, p_req, T_orb, contact_frac, collect_frac, E_spec, E_dens):
+    def __init__(self, p_req, T_orb, t_contact, t_eclipse_contact, E_spec, E_dens, DoD, bat_eff):
         """
         :param p_req: Power needed for transmission [W] (accounts for losses)
         :param T_orb: Total orbital period (s)
-        :param contact_frac: fraction of the orbit that allows for power transmission [-]
-        :param collect_frac: fraction of the orbit that allows for power collection [-]
+        :param t_contact: Contact time with moon receiver [s]
+        :param t_eclipse_contact: Worst case contact time with no possibility of collection  [s]
         :param E_spec: Specific battery energy [J/kg]
         :param E_dens: Energy volume density [J/L]
+        :param DoD: Depth of Discharge [-]
+        :param bat_eff: Battery efficiency [-]
         """
 
         self.p_req = p_req
         self.T_orb = T_orb
-        self.contact_frac = contact_frac
-        self.collect_frac = collect_frac
+        self.t_contact = t_contact
+        self.t_eclipse_contact = t_eclipse_contact
         self.E_spec = E_spec
         self.E_dens = E_dens
+        self.DoD = DoD
+        self.bat_eff = bat_eff
 
         self.stored_energy = self.calc_stored_energy()
         self.battery_mass = self.calc_battery_mass()
 
     def calc_stored_energy(self):
-        return self.p_req * self.T_orb * self.contact_frac
-        #return self.p_req * (self.T_orb*self.contact_frac -  eclipse_w_tx_frac * t_eclipse)
+        #return self.p_req * self.T_orb * self.contact_frac
+        return self.p_req * self.t_eclipse_contact/(self.DoD)
         # return p_req * (t_tx -eclipse_w_tx_frac * t_eclipse)
 
     def calc_battery_mass(self):
@@ -62,4 +66,4 @@ class Batteries:
         return self.stored_energy / self.E_dens
 
     def calc_required_coll_power(self):
-        return self.stored_energy / (self.T_orb * self.collect_frac)
+        return self.stored_energy / (self.t_contact)

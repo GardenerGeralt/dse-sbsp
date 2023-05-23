@@ -60,7 +60,7 @@ def sizing_EPS():
     "Actual sizing of the solar panels and batteries"
     panel_area, panel_mass = collect.size(power_required_no_bat, total=True)
 
-    battery = bt(p_req=power_required_no_bat , T_orb=3600*8.7, t_contact=3600*6, t_eclipse_contact=600, E_spec=392400, E_dens=4.428e+8, DoD=0.4, bat_eff=0.9)
+    battery = bt(p_req=power_required_no_bat , T_orb=3600*26.93, t_contact=3600*22.29, t_eclipse_contact=60 * 15*60, E_spec=392400, E_dens=4.428e+8, DoD=0.4, bat_eff=0.9)
     battery_mass = battery.calc_battery_mass()
     battery_volume = battery.calc_battery_volume()
 

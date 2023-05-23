@@ -8,7 +8,7 @@ def calc_wavelength(f):
 def calc_a(R,h):
     return R + h
 def calc_G_trans(D_transmitter, f):
-    return 20 * np.log10(D_transmitter) + 20 * np.log10(f / 1e9) + 17.8
+    return 20 * np.log10(D_transmitter) + 20 * np.log10(f/1e9) + 17.8
 def calc_G_rec(eta_trans, D_receiver, wavelength):
     return 10 * np.log10(eta_trans * (np.pi * D_receiver) ** 2 / wavelength ** 2)
 def calc_alpha_12(f, D):
@@ -18,7 +18,6 @@ def calc_L_atm(f):
     return -(6E-8 * f ** 6 - 3E-6 * f ** 5 + 4E-5 * f ** 4 - 0.0002 * f ** 3 - 0.0003 * f ** 2 + 0.0065 * f + 0.0233)
 def calc_L_pr(alpha_transmitter, e_t):
     return -12 * (e_t / alpha_transmitter) ** 2 - 12 * (0.1) ** 2
-
 def calc_L_s(wavelength, S):
     return (wavelength / (4 * np.pi * S)) ** 2
 def calc_EB_over_N0(P_trans, L_trans, L_atm, G_receiver, G_transmitter, L_s, L_pr, L_rec, k_b, T_sys, R_req):
@@ -27,7 +26,7 @@ def calc_margin(EB_over_N0, E_over_B_req):
     return EB_over_N0 - E_over_B_req
 
 class LinkBudget:
-    def __init__(self, P_trans_sc, P_trans_gs, L_trans, L_rec, f_dl, TAR, D_sc, D_gs, alt, e_t,
+    def __init__(self, P_trans_sc, P_trans_gs, L_trans, L_rec, f_dl, TAR, D_sc, D_gs, e_t,
                  R_up, stored_data, t_contact, SNR_req):
         """
         :param P_trans_sc: Spacecraft communication subsystem power [W]
@@ -38,12 +37,10 @@ class LinkBudget:
         :param TAR: Turn-Around-Ratio (uplink/downlink) [-]
         :param D_sc: Spacecraft dish diameter [m]
         :param D_gs: Ground station dish diameter [m]
-        :param alt: Orbital altitude [km]
         :param e_t: Pointing offset angle [deg]
         :param R_up: Uplink data rate [bit/s]
         :param stored_data: data stored over one orbit [bits]
         :param t_contact: contact time with Earth [s]
-        #:param R_down: Downlink data rate [bit/s]
         :param SNR_req: Required Signal-to-Noise Ratio (based on coding and BER) [dB]
         """
         #Note to self: we use X-band (8.5GHz) and a 35m diameter gs antenna at 20kW (or 2000 like the adsee assignments
@@ -55,11 +52,11 @@ class LinkBudget:
         self.P_trans_gs = P_trans_gs
         self.L_trans = L_trans
         self.L_rec = L_rec
-        self.f_dl = f_dl / 1e9 #converting to Hz
+        self.f_dl = f_dl * 1e9 #converting to Hz
         self.TAR = TAR
         self.D_sc = D_sc
         self.D_gs = D_gs
-        self.alt = alt
+        #self.alt = alt
         self.e_t = e_t
         self.R_up = R_up
         self.stored_data = stored_data
@@ -96,8 +93,8 @@ class LinkBudget:
         self.L_atm_up = calc_L_atm(self.f_ul)
         self.L_space_up = convert_dB(calc_L_s(self.wavelength_up, self.distance))
         self.P_up = convert_dB(self.P_trans_gs)
-        self.alpha_up_gs = calc_alpha_12(self.f_ul, self.D_gs)
-        self.alpha_up_sc = calc_alpha_12(self.f_ul, self.D_sc)
+        self.alpha_up_gs = calc_alpha_12(self.f_ul/1e9, self.D_gs)
+        self.alpha_up_sc = calc_alpha_12(self.f_ul/1e9, self.D_sc)
         self.L_pr_up = calc_L_pr(self.alpha_up_sc, self.e_t)
         self.R_up_dB = convert_dB(self.R_up)
         self.Eb_over_N0_up = calc_EB_over_N0(self.P_up, self.L_trans_dB, self.L_atm_up, self.G_receiver_up,
@@ -114,8 +111,8 @@ class LinkBudget:
         self.L_atm_down = calc_L_atm(self.f_dl)
         self.L_space_down = convert_dB(calc_L_s(self.wavelength_dl, self.distance))
         self.P_down = convert_dB(self.P_trans_sc)
-        self.alpha_down_gs = calc_alpha_12(self.f_dl, self.D_gs)
-        self.alpha_down_sc = calc_alpha_12(self.f_dl, self.D_sc)
+        self.alpha_down_gs = calc_alpha_12(self.f_dl/1e9, self.D_gs)
+        self.alpha_down_sc = calc_alpha_12(self.f_dl/1e9, self.D_sc)
         self.L_pr_down = calc_L_pr(self.alpha_down_sc, self.e_t)
         self.R_down_dB = convert_dB(self.R_down)
         self.Eb_over_N0_down = calc_EB_over_N0(self.P_down, self.L_trans_dB, self.L_atm_down, self.G_receiver_down,

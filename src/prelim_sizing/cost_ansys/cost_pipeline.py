@@ -31,12 +31,12 @@ class CostPipeline:
             # devM = (self.sbsp[i] - self.distributions[i]) / self.distributions[i]
             devP = (self.sbsppower[i] - self.ci_database.distributions[i][4]) / self.ci_database.distributions[i][5]
             devM = (self.sbspmass[i] - self.ci_database.distributions[i][1]) / self.ci_database.distributions[i][2]
-            print(devP, devM)
+            # print(devP, devM)
             missionci = missionci + self.field.getci(devP, devM) * self.ci_database.distributions[i][3]
             # missionci = missionci + self.field.getci(devP, devM) * self.distributions[i]
 
         slope, intercept, rvalue = self.ci_database.getlinearregressor()
-        print(missionci, 'r-value:', rvalue)
+        # print(missionci, 'r-value:', rvalue)
         self.devcost = slope*missionci+intercept
 
     def getprodcost(self):

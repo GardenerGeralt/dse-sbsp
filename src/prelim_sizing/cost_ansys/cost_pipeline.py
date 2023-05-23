@@ -16,27 +16,27 @@ class CostPipeline:
         self.sats = nsat
         self.subsystems = 7
         # self.distributions = [0.16,0.12,0.10,0.20,0.12,0.11,0.17]
-        self.sbsp = [0.14,0.14,0.14,0.14,0.05,0.23,0.14]
-
-        self.field = cx.Field(3,-1,8,0.2)
+        self.sbspmass = [0.34,0.11,0.3,0.04,0.04,0.1,0.07]
+        self.sbsppower = [0.02, 0.25, 0.28, 0.15, 0.09, 0.16, 0.05]
+        self.field = cx.Field(3,-1,8,0.5)
         self.ci_database = db.CiDatabase(self.field)
         self.launcher = launch.Launcher(10000000,100000)
         self.production = prod.Production(self.sats, self.sysmass)
         self.AIT = ait.Ait(self.subsystems, self.sats)
 
     def getdevcost(self):
-        sbsp = self.sbsp
         missionci = 0
-        for i in range(len(sbsp)):
+        for i in range(len(self.sbspmass)):
             # devP = (self.sbsp[i] - self.distributions[i]) / self.distributions[i]
             # devM = (self.sbsp[i] - self.distributions[i]) / self.distributions[i]
-            devP = (self.sbsp[i] - self.ci_database.distributions[i][3]) / self.ci_database.distributions[i][4]
-            devM = (self.sbsp[i] - self.ci_database.distributions[i][1]) / self.ci_database.distributions[i][2]
+            devP = (self.sbsppower[i] - self.ci_database.distributions[i][4]) / self.ci_database.distributions[i][5]
+            devM = (self.sbspmass[i] - self.ci_database.distributions[i][1]) / self.ci_database.distributions[i][2]
+            print(devP, devM)
             missionci = missionci + self.field.getci(devP, devM) * self.ci_database.distributions[i][3]
             # missionci = missionci + self.field.getci(devP, devM) * self.distributions[i]
 
         slope, intercept, rvalue = self.ci_database.getlinearregressor()
-        # print(missionci, 'r-value:', rvalue)
+        print(missionci, 'r-value:', rvalue)
         self.devcost = slope*missionci+intercept
 
     def getprodcost(self):

@@ -31,7 +31,7 @@ class CiDatabase:
                 # print(self.database[i][j+2], self.distributions[j][4])
                 devP = (self.database[i][j+2]-self.distributions[j][4])/self.distributions[j][5]
                 devM = (self.database[i][j+self.distributions.shape[0]+2]-self.distributions[j][1])/self.distributions[j][2]
-                ci = ci + instance.getci(devP, devM)*self.distributions[j][5]
+                ci = ci + instance.getci(devP, devM)*self.distributions[j][3]
 
             data = [self.database[i][0], self.database[i][1], ci]
             # print("data")
@@ -59,8 +59,8 @@ class CiDatabase:
         intercept = regressor.intercept
         rvalue = regressor.rvalue
         plt.scatter(civals, costvals)
-        cicustom = np.arange(0.0, 2.5, 0.25)
+        cicustom = np.arange(0.0, 6.5, 0.5)
         costcustom = cicustom*slope+intercept
         plt.plot(cicustom, costcustom)
-        # plt.show()
+        plt.show()
         return slope, intercept, rvalue

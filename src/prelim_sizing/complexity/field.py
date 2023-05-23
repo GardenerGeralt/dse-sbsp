@@ -24,7 +24,12 @@ class Field:
         self.precision = 0.005
 
     def miniaturise(self, pdev, mdev):
-        ci = self.strength*math.exp(-0.4*(pdev*mdev)**3)*(pdev**2+mdev**2)
+        # THIS FIRST STATEMENT SHOULD BE CHANGED TO SOMETHING MORE ROBUST
+        if abs(pdev*mdev) > 6:
+            ci = self.cihighbound*2
+        else:
+            ci = self.strength*math.exp(-0.4*(pdev*mdev)**3)*(pdev**2+mdev**2)
+
         if ci >= self.cihighbound*2:
             ci = self.cihighbound*2
         return ci

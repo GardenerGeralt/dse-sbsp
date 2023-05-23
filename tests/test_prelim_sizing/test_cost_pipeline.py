@@ -5,7 +5,7 @@ import src.prelim_sizing.complexity.field as fld
 
 class TestCostPipeline:
     costs = np.array([])
-    pipeline = cstppl.CostPipeline(100000, 5000)
+    pipeline = cstppl.CostPipeline(75400, 400)
     pipeline.populatecost()
     costs = np.append(costs, [pipeline.gettotalcost()])
     print(costs)

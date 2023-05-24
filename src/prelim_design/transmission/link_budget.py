@@ -130,4 +130,5 @@ class LinkBudget:
 
     """Calculations specific for downlink"""
     def calculate_R_down(self):
-        return self.stored_data / self.t_contact
+        #return self.stored_data / self.t_contact
+        return 8e6

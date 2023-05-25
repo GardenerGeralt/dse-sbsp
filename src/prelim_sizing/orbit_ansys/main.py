@@ -1,13 +1,10 @@
-import orbit_ansys as oa
+from orbitfull import Orbit, OrbitPlot
+from orbit_params import orbpar
 
-
-def main():
-    ...
 
 
 if __name__ == "__main__":
-    FLLO = oa.OrbitFromPeri(110, 0.09547, 84.8, "Frozen low lunar orbit")
-    FELO = oa.OrbitFromPeri(750, 0.5, 48.46, "Frozen elliptical lunar orbit")
-
-    print(FLLO)
-    print(FELO)
+    orb = Orbit(*orbpar)
+    orbplot = OrbitPlot(orbpar)
+    orbplot.plot_all()
+    orbplot.show()

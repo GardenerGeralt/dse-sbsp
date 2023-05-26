@@ -74,6 +74,8 @@ def main(designs, power_rx):
         dry_mass = (mass_tx + mass_collect) * EPS2DRY / contact_time_fraction
         wet_mass = dry_mass * DRY2WET
         cost_total = launcher.cost(wet_mass)
+        print(collector.size(power_tx))
+        print(mass_tx)
 
         if isinstance(transmitter, tm.Laser):
             receiver_width = transmitter.calc_beam_width(contact_altitude)

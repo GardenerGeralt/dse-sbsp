@@ -22,7 +22,7 @@ class CostPipeline:
         self.ci_database = db.CiDatabase(self.field)
         self.launcher = launch.Launcher(10000000,100000)
         self.production = prod.Production(self.sats, self.sysmass)
-        self.AIT = ait.Ait(self.subsystems, self.sats)
+        self.AIT = ait.Ait(self.subsystems, self.sats, self.sysmass)
 
     def getdevcost(self):
         missionci = 0

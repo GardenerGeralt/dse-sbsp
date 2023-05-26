@@ -62,5 +62,5 @@ class CiDatabase:
         cicustom = np.arange(0.0, 6.5, 0.5)
         costcustom = cicustom*slope+intercept
         plt.plot(cicustom, costcustom)
-        plt.show()
+        #plt.show()
         return slope, intercept, rvalue

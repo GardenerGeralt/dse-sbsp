@@ -1,4 +1,4 @@
-
+import math
 
 class Launcher:
 
@@ -7,7 +7,7 @@ class Launcher:
         self.mass = mass
 
     def getcost(self, mass):
-        launches = mass/self.mass
+        launches = math.ceil(mass/self.mass)
         cost = launches * self.price
 
         return cost

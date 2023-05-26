@@ -5,7 +5,7 @@ Created on Wed May 17 12:18:52 2023
 @author: daans
 """
 
-# Add transmit angle in plot
+# Add transmit angle in plot - done?
 # Add position of receiver
 
 import matplotlib.pyplot as plt
@@ -20,10 +20,6 @@ from orbit_func import *
 # import plotly.io as io
 
 # io.renderers.default = 'browser'
-
-
-# --===== Transmission calculations =====--
-# Initialize orbit
 
 
 class Orbit:
@@ -41,9 +37,7 @@ class Orbit:
         for i in range(len(self.t_array)):
             time_point = self.t_array[i]
             mean_anomaly = time_point / self.T * 2 * np.pi
-            eccentric_anomaly = fsolve(
-                lambda E: E - ECC * sin(E) - mean_anomaly, mean_anomaly
-            )[0]
+            eccentric_anomaly = fsolve(lambda E: E - ECC * sin(E) - mean_anomaly, mean_anomaly)[0]
             self.theta_array[i] = 2 * np.arctan2(
                 tan(eccentric_anomaly / 2), np.sqrt((1 - ECC) / (1 + ECC))
             )
@@ -87,8 +81,7 @@ class Orbit:
         theta_transmit = np.average(np.array(angles)[self.index])
 
         self.ecl = np.where(
-            (self.orbit[0] > 0)
-            & (np.sqrt(self.orbit[1] ** 2 + self.orbit[2] ** 2) < R_M)
+            (self.orbit[0] > 0) & (np.sqrt(self.orbit[1] ** 2 + self.orbit[2] ** 2) < R_M)
         )[0]
         max_eclipse = 0
 
@@ -153,20 +146,12 @@ class Orbit:
         print("-Pericenter altitude = " + str(round(SMA * (1 - ECC) - R_M, 2)))
         print("-Apocenter altitude = " + str(round(SMA * (1 + ECC) - R_M, 2)))
         print("-Transmission time = " + str(round(sec2hrs(t_transmit), 2)) + " hrs")
+        print("-Transmission percentage = " + str(round(percentage(t_transmit, self.T), 2)) + " %")
         print(
-            "-Transmission percentage = "
-            + str(round(percentage(t_transmit, self.T), 2))
-            + " %"
+            "-Minimum transmission altitude (from South Pole) = " + str(round(alt_min, 2)) + " km"
         )
         print(
-            "-Minimum transmission altitude (from South Pole) = "
-            + str(round(alt_min, 2))
-            + " km"
-        )
-        print(
-            "-Maximum transmission altitude (from South Pole) = "
-            + str(round(alt_max, 2))
-            + " km"
+            "-Maximum transmission altitude (from South Pole) = " + str(round(alt_max, 2)) + " km"
         )
         print(
             "-Time-averaged transmission altitude (from South Pole) = "
@@ -174,9 +159,7 @@ class Orbit:
             + " km"
         )
         print(
-            "-Time-averaged angle of incidence = "
-            + str(round(rad2deg(theta_transmit), 2))
-            + " deg"
+            "-Time-averaged angle of incidence = " + str(round(rad2deg(theta_transmit), 2)) + " deg"
         )
         print("-Maximum eclipse time = " + str(round(sec2hrs(max_eclipse), 2)) + " hrs")
         print(
@@ -210,7 +193,7 @@ class OrbitPlot(Orbit):
             width=1200,
             margin=dict(r=20, l=10, b=10, t=10),
         )
-        self.fig.update_layout(scene_aspectmode='cube')
+        self.fig.update_layout(scene_aspectmode="cube")
 
     def plot_moon(self):
         u_m, v_m = np.mgrid[0 : 2 * pi : 200j, 0:pi:20j]
@@ -218,44 +201,36 @@ class OrbitPlot(Orbit):
         y_m = R_M * sin(u_m) * sin(v_m)
         z_m = R_M * cos(v_m)
         self.fig.add_trace(
-            go.Surface(
-                x=x_m, y=y_m, z=z_m, colorscale=[[0, "white"], [1, "white"]], opacity=1
-            )
+            go.Surface(x=x_m, y=y_m, z=z_m, colorscale=[[0, "white"], [1, "white"]], opacity=1)
         )
         return x_m, y_m, z_m
 
     def plot_cone(self):
-        u_c, v_c = np.mgrid[0 : 2 * pi : 200j, 0:pi:200j]
+        """u_c, v_c = np.mgrid[0 : 2 * pi : 200j, 0:pi:200j]
         x_c = SMA * cos(u_c) * sin(v_c)
         y_c = SMA * sin(u_c) * sin(v_c)
-        z_c = -1 * np.sqrt((x_c**2 + y_c**2) / tan(trans_angle)) - R_M
+        z_c = -1 * np.sqrt((x_c**2 + y_c**2) / tan(trans_angle)) - R_M"""
 
-        phi = 2*deg2rad(70)
-        h = np.linspace(0, -20000, 100)
-        th = np.linspace(0, 2*pi, 100)
+        phi = deg2rad(70)
+        h = np.linspace(0, 20000, 100)
+        th = np.linspace(0, 2 * pi, 100)
         H, TH = np.meshgrid(h, th)
-        x_c = H*np.arctan(phi)*sin(TH)
-        y_c = H*np.arctan(phi)*cos(TH)
-        z_c = H - R_M
+        x_c = H * np.arctan(phi) * sin(TH)
+        y_c = H * np.arctan(phi) * cos(TH)
+        z_c = -H - R_M
 
         self.fig.add_trace(
-            go.Surface(
-                x=x_c, y=y_c, z=z_c, colorscale=[[0, "blue"], [1, "blue"]], opacity=0.1
-            )
+            go.Surface(x=x_c, y=y_c, z=z_c, colorscale=[[0, "blue"], [1, "blue"]], opacity=0.1)
         )
 
     def plot_umbra(self):
         z_s, y_s, x_s = cylinder(R_M, SMA)
         self.fig.add_trace(
-            go.Surface(
-                x=x_s, y=y_s, z=z_s, colorscale=[[0, "grey"], [1, "grey"]], opacity=0.5
-            )
+            go.Surface(x=x_s, y=y_s, z=z_s, colorscale=[[0, "grey"], [1, "grey"]], opacity=0.5)
         )
 
     def plot_sc(self, n=80):
-        SC_80 = self.orbit[
-            :, np.round(np.linspace(0, len(self.orbit[0]) - 1, n)).astype(int)
-        ]
+        SC_80 = self.orbit[:, np.round(np.linspace(0, len(self.orbit[0]) - 1, n)).astype(int)]
         self.fig.add_trace(
             go.Scatter3d(
                 x=SC_80[0],
@@ -360,8 +335,6 @@ class OrbitPlot(Orbit):
 
     def plot_rec(self):
         ...
-        '''coords = self.plot_moon()
-        coords = coords[coords[2]<]'''
 
     def plot_all(self):
         self.plot_moon()
@@ -369,6 +342,7 @@ class OrbitPlot(Orbit):
         self.plot_umbra()
         self.plot_orbit()
         self.plot_sc()
+        self.plot_rec()
 
     def show(self):
         self.fig.show()

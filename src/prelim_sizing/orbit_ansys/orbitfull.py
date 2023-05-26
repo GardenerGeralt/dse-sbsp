@@ -81,42 +81,42 @@ class Orbit:
         # Time-averaged angle of incidence
         theta_transmit = np.average(np.array(angles)[self.trans_idx])
 
-        self.ecl_idx = np.where(
-        # Eclipse time
-        eclipse_times = []
-        for theta_s in range(0, 360 + res_e, res_e):
-            theta_s = deg2rad(theta_s)
-            d = []
-            phi = []
-            print(str(round(theta_s / (2 * np.pi) * 100, 1)) + " %")
-            for i in range(len(orbit[0])):
-                x_sat, y_sat, z_sat = orbit[0][i], orbit[1][i], orbit[2][i]
-                x_i = (x_sat + tan(theta_s) * y_sat) / (1 + (tan(theta_s)) ** 2)
-                y_i = tan(theta_s) * x_i
-                d_i = np.sqrt((x_sat - x_i) ** 2 + (y_sat - y_i) ** 2 + z_sat ** 2)
-                d.append(d_i)
-                phi_i = np.arctan2(y_sat, x_sat)
-                if phi_i < 0:
-                    phi_i = 2 * np.pi + phi_i
-                phi.append(phi_i)
-            ecl = np.where((d < np.ones(np.shape(d)) * R_M) & (phi > np.ones(np.shape(phi)) * (theta_s + np.pi / 2)) & (
-                        phi < np.ones(np.shape(phi)) * (theta_s + 3 * np.pi / 2)))
-            if ecl[0].size > 0:
-                eclipse_time = t_array[ecl][-1] - t_array[ecl][0]
-            else:
-                eclipse_time = 0
-            eclipse_times.append(eclipse_time)
-        max_eclipse = np.max(eclipse_times)
+        # # Eclipse time
+        # eclipse_times = []
+        # for theta_s in range(0, 360 + res_e, res_e):
+        #     theta_s = deg2rad(theta_s)
+        #     d = []
+        #     phi = []
+        #     print(str(round(theta_s / (2 * np.pi) * 100, 1)) + " %")
+        #     for i in range(len(orbit[0])):
+        #         x_sat, y_sat, z_sat = orbit[0][i], orbit[1][i], orbit[2][i]
+        #         x_i = (x_sat + tan(theta_s) * y_sat) / (1 + (tan(theta_s)) ** 2)
+        #         y_i = tan(theta_s) * x_i
+        #         d_i = np.sqrt((x_sat - x_i) ** 2 + (y_sat - y_i) ** 2 + z_sat ** 2)
+        #         d.append(d_i)
+        #         phi_i = np.arctan2(y_sat, x_sat)
+        #         if phi_i < 0:
+        #             phi_i = 2 * np.pi + phi_i
+        #         phi.append(phi_i)
+        #     ecl = np.where((d < np.ones(np.shape(d)) * R_M) & (phi > np.ones(np.shape(phi)) * (theta_s + np.pi / 2)) & (
+        #                 phi < np.ones(np.shape(phi)) * (theta_s + 3 * np.pi / 2)))
+        #     if ecl[0].size > 0:
+        #         eclipse_time = t_array[ecl][-1] - t_array[ecl][0]
+        #     else:
+        #         eclipse_time = 0
+        #     eclipse_times.append(eclipse_time)
+        # max_eclipse = np.max(eclipse_times)
 
-        self.ecl = np.where(
+        max_eclipse = 0
+        self.ecl_idx = np.where(
             (self.orbit[0] > 0) & (np.sqrt(self.orbit[1] ** 2 + self.orbit[2] ** 2) < R_M)
         )[0]
-        #max_eclipse = 0
+
 
         # --===== Number of spacecraft in view =====--
         if self.trans_idx.size > 0:
-        t_spacing = self.T / n_sat
-        sat_in_view = t_transmit / t_spacing
+            t_spacing = self.T / n_sat
+            sat_in_view = t_transmit / t_spacing
         '''
         if self.index.size > 0:
             l1 = cos(RAAN) * cos(AOP) - sin(RAAN) * sin(AOP) * cos(INC)
@@ -227,7 +227,13 @@ class OrbitPlot(Orbit):
             width=1500,
             margin=dict(r=10, l=10, b=10, t=10),
             scene_aspectmode="cube",
+            updatemenus=[dict(
+                type="buttons",
+                buttons=[dict(label="Play",
+                              method="animate",
+                              args=[None])])],
         )
+
 
     def plot_moon(self):
         u_m, v_m = np.mgrid[0 : 2 * pi : 200j, 0:pi:200j]
@@ -348,6 +354,7 @@ class OrbitPlot(Orbit):
                 ),
             ),
         )
+        print(len(self.fig.data))
         # self.fig.add_trace(
         #     go.Scatter3d(
         #         x=rest_orbit2[0],
@@ -375,24 +382,45 @@ class OrbitPlot(Orbit):
     def plot_rec(self):
         ...
 
-    def vary_sc(self, n=80, dtheta=5):
+    def vary_sc(self, n_sc=80, n_pos=500):
+        SC_varied = np.array([[],[],[]])
+        '''for i in np.linspace(0, len(self.orbit[0])-1, n_pos):
+            print(i)
+            np.dstack((SC_varied, self.orbit[:, np.round(np.linspace(1000, 1000+len(self.orbit[0]) - 1, n_sc)).astype(int) % len(self.orbit[0])]))'''
+        SC_varied = np.array([self.orbit[:, np.round(np.linspace(i, i+len(self.orbit[0]) - 1, n_sc)).astype(int) % len(self.orbit[0])] for i in np.linspace(0, len(self.orbit[0])-1, n_pos)])
+        for i in SC_varied:
+            self.fig.add_trace(go.Scatter3d(
+                x = i[0],
+                y = i[1],
+                z = i[2],
+                visible = False,
+                connectgaps=False,
+                mode="markers",
+                marker=dict(
+                    size=3,
+                    color="black",
+                ),
+            ))
+
+        print(len(self.fig.data))
+        return SC_varied
 
     def add_slider(self):
         # Create and add slider
         steps = []
-        print(self.fig.data)
-        for i in range(len(self.fig.data)):
+        SC_varied = self.vary_sc()
+        for i in range(len(SC_varied[:, 0, 0])):
             step = dict(
                 method="update",
-                args=[{"visible": [False] * len(self.fig.data)},
+                args=[{"visible": [True]*6 + [False] * len(SC_varied[:, 0, 0])},
                       {"title": "Slider switched to step: " + str(i)}],  # layout attribute
             )
-            step["args"][0]["visible"][i] = True  # Toggle i'th trace to "visible"
+            step["args"][0]["visible"][i+5] = True  # Toggle i'th trace to "visible"
             steps.append(step)
 
         sliders = [dict(
-            active=10,
-            #currentvalue={"prefix": "Frequency: "},
+            active=0,
+            currentvalue={"prefix": "Frequency: "},
             pad={"t": 50},
             steps=steps
         )]
@@ -406,8 +434,9 @@ class OrbitPlot(Orbit):
         self.plot_cone()
         self.plot_umbra()
         self.plot_orbit()
-        self.plot_sc()
-        self.plot_rec()
+        print(len(self.fig.data))
+        # self.plot_sc()
+        # self.plot_rec()
 
     def show(self):
         self.fig.show()

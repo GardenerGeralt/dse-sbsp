@@ -4,7 +4,6 @@ import src.prelim_sizing.cost_ansys.launch_cost as launch
 import src.prelim_sizing.cost_ansys.production_cost as prod
 import src.prelim_sizing.cost_ansys.ait_cost as ait
 
-
 class CostPipeline:
 
     def __init__(self, sysmass, nsat):
@@ -36,7 +35,7 @@ class CostPipeline:
             # missionci = missionci + self.field.getci(devP, devM) * self.distributions[i]
 
         slope, intercept, rvalue = self.ci_database.getlinearregressor()
-        # print(missionci, 'r-value:', rvalue)
+        print(missionci, 'r-value:', rvalue)
         self.devcost = slope * missionci + intercept
 
     def getprodcost(self):

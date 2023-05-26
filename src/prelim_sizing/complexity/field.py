@@ -94,5 +94,4 @@ class Field:
         ax.zaxis.set_major_locator(LinearLocator(10))
         ax.zaxis.set_major_formatter('{x:.02f}')
 
-        plt.show()
-
+        # plt.show()

@@ -190,7 +190,7 @@ class OrbitPlot(Orbit):
                     range=[-25000, 15000],
                 ),
             ),
-            width=1200,
+            width=1500,
             margin=dict(r=20, l=10, b=10, t=10),
         )
         self.fig.update_layout(scene_aspectmode="cube")
@@ -205,18 +205,18 @@ class OrbitPlot(Orbit):
         )
         return x_m, y_m, z_m
 
-    def plot_cone(self):
+    def plot_cone(self, half_angle=70):
         """u_c, v_c = np.mgrid[0 : 2 * pi : 200j, 0:pi:200j]
         x_c = SMA * cos(u_c) * sin(v_c)
         y_c = SMA * sin(u_c) * sin(v_c)
         z_c = -1 * np.sqrt((x_c**2 + y_c**2) / tan(trans_angle)) - R_M"""
 
-        phi = deg2rad(70)
+        phi = deg2rad(half_angle)
         h = np.linspace(0, 20000, 100)
         th = np.linspace(0, 2 * pi, 100)
         H, TH = np.meshgrid(h, th)
-        x_c = H * np.arctan(phi) * sin(TH)
-        y_c = H * np.arctan(phi) * cos(TH)
+        x_c = H * tan(phi) * sin(TH)
+        y_c = H * tan(phi) * cos(TH)
         z_c = -H - R_M
 
         self.fig.add_trace(

@@ -7,6 +7,7 @@ Created on Wed May 17 12:18:52 2023
 
 # Add transmit angle in plot - done?
 # Add position of receiver
+# Solve orbit plotting bug when changing orbital elements
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -80,12 +81,41 @@ class Orbit:
         # Time-averaged angle of incidence
         theta_transmit = np.average(np.array(angles)[self.index])
 
+        # Eclipse time
+        eclipse_times = []
+        for theta_s in range(0, 360 + res_e, res_e):
+            theta_s = deg2rad(theta_s)
+            d = []
+            phi = []
+            print(str(round(theta_s / (2 * np.pi) * 100, 1)) + " %")
+            for i in range(len(orbit[0])):
+                x_sat, y_sat, z_sat = orbit[0][i], orbit[1][i], orbit[2][i]
+                x_i = (x_sat + tan(theta_s) * y_sat) / (1 + (tan(theta_s)) ** 2)
+                y_i = tan(theta_s) * x_i
+                d_i = np.sqrt((x_sat - x_i) ** 2 + (y_sat - y_i) ** 2 + z_sat ** 2)
+                d.append(d_i)
+                phi_i = np.arctan2(y_sat, x_sat)
+                if phi_i < 0:
+                    phi_i = 2 * np.pi + phi_i
+                phi.append(phi_i)
+            ecl = np.where((d < np.ones(np.shape(d)) * R_M) & (phi > np.ones(np.shape(phi)) * (theta_s + np.pi / 2)) & (
+                        phi < np.ones(np.shape(phi)) * (theta_s + 3 * np.pi / 2)))
+            if ecl[0].size > 0:
+                eclipse_time = t_array[ecl][-1] - t_array[ecl][0]
+            else:
+                eclipse_time = 0
+            eclipse_times.append(eclipse_time)
+        max_eclipse = np.max(eclipse_times)
+
         self.ecl = np.where(
             (self.orbit[0] > 0) & (np.sqrt(self.orbit[1] ** 2 + self.orbit[2] ** 2) < R_M)
         )[0]
-        max_eclipse = 0
+        #max_eclipse = 0
 
         # --===== Number of spacecraft in view =====--
+        t_spacing = self.T / n_sat
+        sat_in_view = t_transmit / t_spacing
+        '''
         if self.index.size > 0:
             l1 = cos(RAAN) * cos(AOP) - sin(RAAN) * sin(AOP) * cos(INC)
             l2 = -cos(RAAN) * sin(AOP) - sin(RAAN) * cos(AOP) * cos(INC)
@@ -141,7 +171,8 @@ class Orbit:
         if self.index.size == 0:
             arclength = float("NaN")
             spacing = float("NaN")
-
+        sat_in_view = arclength / spacing
+        '''
         # --===== Report data =====--
         print("-Pericenter altitude = " + str(round(SMA * (1 - ECC) - R_M, 2)))
         print("-Apocenter altitude = " + str(round(SMA * (1 + ECC) - R_M, 2)))
@@ -166,7 +197,7 @@ class Orbit:
             "-For "
             + str(n_sat)
             + " equally spaced satellites in orbit, at any given instant "
-            + str(round(arclength / spacing, 2))
+            + str(round(sat_in_view, 2))
             + " satellites can transmit at the same time."
         )
 
@@ -196,7 +227,7 @@ class OrbitPlot(Orbit):
         self.fig.update_layout(scene_aspectmode="cube")
 
     def plot_moon(self):
-        u_m, v_m = np.mgrid[0 : 2 * pi : 200j, 0:pi:20j]
+        u_m, v_m = np.mgrid[0 : 2 * pi : 200j, 0:pi:200j]
         x_m = R_M * cos(u_m) * sin(v_m)
         y_m = R_M * sin(u_m) * sin(v_m)
         z_m = R_M * cos(v_m)
@@ -234,7 +265,7 @@ class OrbitPlot(Orbit):
                 mode="markers",
                 marker=dict(
                     size=3,
-                    color="white",
+                    color="grey",
                 ),
             )
         )

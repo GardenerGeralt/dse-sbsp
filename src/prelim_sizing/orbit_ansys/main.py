@@ -4,7 +4,7 @@ from orbit_params import orbpar
 
 
 if __name__ == "__main__":
-    orb = Orbit(*orbpar)
+    # orb = Orbit(*orbpar)
     orbplot = OrbitPlot(orbpar)
     orbplot.plot_all()
     orbplot.show()

@@ -18,4 +18,5 @@ if __name__ == '__main__':
         "x": x,
         "y": [x, x**2, x**3, x**4]
     }
-    main(data)
+    # main(data)
+    plt.volume_slice()

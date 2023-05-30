@@ -2,6 +2,8 @@ import plotly.graph_objects as go
 import plotly.express as px
 from plotly.subplots import make_subplots
 import numpy as np
+import time
+from skimage import io
 
 # color palette for project. Credits to http://tsitsul.in/blog/coloropt/
 COLORS = [(235, 172, 35), (184, 0, 88), (0, 140, 249), (0, 110, 0),
@@ -146,3 +148,92 @@ def four_plots(x_data, y_data, labels=(None, None, None, None), x_titles='x axis
 
     fig.update_layout(template="ggplot2", showlegend=True)
     fig.show()
+
+
+def volume_slice(vals, coords):
+    df = {'x': [coord for coord in coords[1]],
+          'y': coords[2],
+          'z': coords[0].flatten(),
+          'value': vals}
+    fig = px.density_heatmap(df, x='x', y='y', z='value', animation_frame='z')
+    fig.show()
+
+    # r, c = volume[0].shape
+    # nb_frames = volume.shape[2]
+    #
+    # fig = go.Figure(frames=[go.Frame(data=go.Surface(
+    #     z=(6.7 - k * 0.1) * np.ones((r, c)),
+    #     surfacecolor=np.flipud(volume[nb_frames - 1 - k]),
+    #     cmin=0, cmax=200
+    # ),
+    #     name=str(k)  # you need to name the frame for the animation to behave properly
+    # )
+    #     for k in range(nb_frames)])
+    #
+    # # Add data to be displayed before animation starts
+    # fig.add_trace(go.Surface(
+    #     z=(nb_frames - 1) / 10 * np.ones((r, c)),
+    #     surfacecolor=np.flipud(volume[nb_frames - 1]),
+    #     colorscale='Gray',
+    #     colorbar=dict(thickness=20, ticklen=4)
+    # ))
+    #
+    # def frame_args(duration):
+    #     return {
+    #         "frame": {"duration": duration},
+    #         "mode": "immediate",
+    #         "fromcurrent": True,
+    #         "transition": {"duration": duration, "easing": "linear"},
+    #     }
+    #
+    # sliders = [
+    #     {
+    #         "pad": {"b": 10, "t": 60},
+    #         "len": 0.9,
+    #         "x": 0.1,
+    #         "y": 0,
+    #         "steps": [
+    #             {
+    #                 "args": [[f.name], frame_args(0)],
+    #                 "label": str(k),
+    #                 "method": "animate",
+    #             }
+    #             for k, f in enumerate(fig.frames)
+    #         ],
+    #     }
+    # ]
+    #
+    # # Layout
+    # fig.update_layout(
+    #     title='Slices in volumetric data',
+    #     width=600,
+    #     height=600,
+    #     scene=dict(
+    #         zaxis=dict(range=[-0.1, 6.8], autorange=False),
+    #         aspectratio=dict(x=1, y=1, z=1),
+    #     ),
+    #     updatemenus=[
+    #         {
+    #             "buttons": [
+    #                 {
+    #                     "args": [None, frame_args(50)],
+    #                     "label": "&#9654;",  # play symbol
+    #                     "method": "animate",
+    #                 },
+    #                 {
+    #                     "args": [[None], frame_args(0)],
+    #                     "label": "&#9724;",  # pause symbol
+    #                     "method": "animate",
+    #                 },
+    #             ],
+    #             "direction": "left",
+    #             "pad": {"r": 10, "t": 70},
+    #             "type": "buttons",
+    #             "x": 0.1,
+    #             "y": 0,
+    #         }
+    #     ],
+    #     sliders=sliders
+    # )
+    #
+    # fig.show()

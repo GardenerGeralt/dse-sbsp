@@ -6,10 +6,12 @@ class Material:
 
 
 class StructuralMaterial(Material):
-    def __init__(self, density, elastic_mod, tens_strength, lin_therm_exp_coef):
+    def __init__(self, density, elastic_mod, yield_strength, ultimate_strength, poisson_ratio, lin_therm_exp_coef):
         super().__init__(density)
         self.elastic_mod = elastic_mod
-        self.tens_strength = tens_strength
+        self.yield_strength = yield_strength
+        self.ultimate_strength = ultimate_strength
+        self.poisson_ratio = poisson_ratio
         self.lin_therm_exp_coef = lin_therm_exp_coef
 
 

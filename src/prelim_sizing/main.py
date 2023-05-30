@@ -71,7 +71,7 @@ def main(designs, power_rx):
         power_tx = transmitter.calc_power_tx(power_rx, contact_altitude)
         mass_tx = transmitter.calc_mass_tx(power_tx)
         _, mass_collect = collector.size(power_tx, total=True)
-        dry_mass = (mass_tx + mass_collect) * EPS2DRY / contact_time_fraction
+        dry_mass = (mass_tx + mass_collect) * EPS2DRY / 0.827
         wet_mass = dry_mass * DRY2WET
         cost_total = launcher.cost(wet_mass)
 

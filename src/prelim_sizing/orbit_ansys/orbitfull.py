@@ -233,7 +233,7 @@ class OrbitPlot(Orbit):
                               method="animate",
                               args=[None])])],
         )
-
+        self.fig.update_layout(transition={'duration': 0.2})
 
     def plot_moon(self):
         u_m, v_m = np.mgrid[0 : 2 * pi : 200j, 0:pi:200j]
@@ -382,13 +382,13 @@ class OrbitPlot(Orbit):
     def plot_rec(self):
         ...
 
-    def vary_sc(self, n_sc=80, n_pos=500):
+    def vary_sc(self, n_sc=80, n_pos=1000):
         SC_varied = np.array([[],[],[]])
         '''for i in np.linspace(0, len(self.orbit[0])-1, n_pos):
             print(i)
             np.dstack((SC_varied, self.orbit[:, np.round(np.linspace(1000, 1000+len(self.orbit[0]) - 1, n_sc)).astype(int) % len(self.orbit[0])]))'''
         SC_varied = np.array([self.orbit[:, np.round(np.linspace(i, i+len(self.orbit[0]) - 1, n_sc)).astype(int) % len(self.orbit[0])] for i in np.linspace(0, len(self.orbit[0])-1, n_pos)])
-        for i in SC_varied:
+        '''for i in SC_varied:
             self.fig.add_trace(go.Scatter3d(
                 x = i[0],
                 y = i[1],
@@ -403,7 +403,15 @@ class OrbitPlot(Orbit):
             ))
 
         print(len(self.fig.data))
+        '''
         return SC_varied
+
+    def animate_plot(self):
+        SC_varied = self.vary_sc()
+        frames = [go.Frame(data=[go.Scatter3d(x=i[0],y = i[1],z = i[2],visible = True,connectgaps=False,mode="markers",marker=dict(size=3, color="black",))]) for i in SC_varied]
+        print(frames)
+        self.plot_moon()
+        self.fig.frames = frames
 
     def add_slider(self):
         # Create and add slider
@@ -434,7 +442,6 @@ class OrbitPlot(Orbit):
         self.plot_cone()
         self.plot_umbra()
         self.plot_orbit()
-        print(len(self.fig.data))
         # self.plot_sc()
         # self.plot_rec()
 

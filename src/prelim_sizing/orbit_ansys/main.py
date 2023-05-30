@@ -9,6 +9,7 @@ if __name__ == "__main__":
     orbplot.plot_all()
 
     # orbplot.vary_sc()
-    orbplot.add_slider()
+    # orbplot.add_slider()
+    orbplot.animate_plot()
     print(len(orbplot.fig.data))
     orbplot.show()

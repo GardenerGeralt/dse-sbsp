@@ -116,7 +116,7 @@ class Orbit:
         # --===== Number of spacecraft in view =====--
         if self.trans_idx.size > 0:
             t_spacing = self.T / n_sat
-            sat_in_view = t_transmit / t_spacing
+            sat_in_view = np.round((t_transmit / t_spacing),0) - 1
         '''
         if self.index.size > 0:
             l1 = cos(RAAN) * cos(AOP) - sin(RAAN) * sin(AOP) * cos(INC)

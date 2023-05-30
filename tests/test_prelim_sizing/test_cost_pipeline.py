@@ -39,12 +39,12 @@ class TestCostPipeline:
     plt.show()
     #plt.savefig()
 
-    print(np.argmin(costs))
-    print(np.min(costs))
-    print(launch[n_id])
-    print(prod[n_id])
-    print(ait[n_id])
-    print(dev[n_id])
+    # print(np.argmin(costs))
+    # print(np.min(costs))
+    # print(launch[n_id])
+    # print(prod[n_id])
+    # print(ait[n_id])
+    # print(dev[n_id])
 
 
 

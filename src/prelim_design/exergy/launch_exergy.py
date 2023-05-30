@@ -1,6 +1,6 @@
 import numpy as np
 import csv
-from MatEnergy import MatEE
+from material_exergy import MatEE
 
 
 methane = int(MatEE['methane'])

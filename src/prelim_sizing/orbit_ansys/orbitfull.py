@@ -77,7 +77,8 @@ class Orbit:
             alt_max = np.max(alts)
         if self.trans_idx.size == 0:
             alt_transmit = float("NaN")
-
+            alt_min = float("NaN")
+            alt_max = float("NaN")
         # Time-averaged angle of incidence
         theta_transmit = np.average(np.array(angles)[self.trans_idx])
 
@@ -117,6 +118,9 @@ class Orbit:
         if self.trans_idx.size > 0:
             t_spacing = self.T / n_sat
             sat_in_view = np.round((t_transmit / t_spacing),0) - 1
+        else:
+            sat_in_view = float("NaN")
+            self.trans_idx = [0]
         '''
         if self.index.size > 0:
             l1 = cos(RAAN) * cos(AOP) - sin(RAAN) * sin(AOP) * cos(INC)
@@ -202,6 +206,7 @@ class Orbit:
             + str(round(sat_in_view, 2))
             + " satellites can transmit at the same time."
         )
+        print(self.orbit[:, 5000])
 
 
 class OrbitPlot(Orbit):

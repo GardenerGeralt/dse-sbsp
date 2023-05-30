@@ -66,7 +66,8 @@ def main(designs, power_rx):
         orbit = create_orbit(design)
         launcher = create_launcher(design)
 
-        contact_time_fraction = orbit.view_time / orbit.period
+        #contact_time_fraction = orbit.view_time / orbit.period
+        contact_time_fraction = 22.29*3600
         contact_altitude = orbit.view_altitude
         power_tx = transmitter.calc_power_tx(power_rx, contact_altitude)
         mass_tx = transmitter.calc_mass_tx(power_tx)

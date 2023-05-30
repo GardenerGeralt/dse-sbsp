@@ -35,7 +35,7 @@ class CostPipeline:
             # missionci = missionci + self.field.getci(devP, devM) * self.distributions[i]
 
         slope, intercept, rvalue = self.ci_database.getlinearregressor()
-        print(missionci, 'r-value:', rvalue)
+        #print(missionci, 'r-value:', rvalue)
         self.devcost = slope * missionci + intercept
 
     def getprodcost(self):

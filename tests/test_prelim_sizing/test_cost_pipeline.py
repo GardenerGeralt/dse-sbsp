@@ -12,7 +12,7 @@ class TestCostPipeline:
     prod = np.array([])
     ait = np.array([])
     dev = np.array([])
-    for n in range(1, 501, 1):
+    for n in range(1, 201, 1):
         pipeline = cstppl.CostPipeline(M, n)
         pipeline.populatecost()
         costs = np.append(costs, [pipeline.gettotalcost()])
@@ -26,7 +26,7 @@ class TestCostPipeline:
 
 
     plt.clf()
-    x = np.arange(1,501, 1)
+    x = np.arange(1,201, 1)
     plt.title(F"System mass {M} kg and optimal n {np.argmin(costs)}")
     plt.plot(n_id,cost_id, marker='o', markersize=5, color="red")
     #plt.xlabel("Number of Spacecraft [n]")
@@ -36,7 +36,7 @@ class TestCostPipeline:
     #plt.plot(x, prod, color='blue')
     #plt.plot(x, ait, color='red')
     #plt.plot(x, dev, color='pink')
-    plt.show()
+    #plt.show()
     #plt.savefig()
 
     # print(np.argmin(costs))

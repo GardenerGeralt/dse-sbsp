@@ -28,7 +28,7 @@ S_Ex = (S_S_CH4+S_B_CH4) * methane + (S_B_O2+S_S_O2) * oxygen
 S_cap = 100000  # kg
 
 S_Ex_kg = S_Ex/S_cap
-print("Starship", S_Ex_kg)
+#print("Starship", S_Ex_kg)
 
 
 # Falcon Heavy
@@ -43,7 +43,7 @@ F_Ex = F_O2 * oxygen + F_CH4 * methane
 F_cap = 26700  # kg
 
 F_Ex_kg = F_Ex/F_cap
-print("Falcon", F_Ex_kg)
+#print("Falcon", F_Ex_kg)
 
 # Centaur [PASS]
 
@@ -65,4 +65,4 @@ H_Ex = (H_H2 * hydrogen) + (H_O2 * oxygen)  # + (H_PBD * MatEE["PBD"])
 H_cap = 11900  # kg
 
 H_Ex_kg = H_Ex/H_cap
-print("H3", H_Ex_kg)
+#print("H3", H_Ex_kg)

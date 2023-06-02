@@ -3,8 +3,7 @@ import math
 
 class Production:
 
-    def __init__(self, nsats, mass):
-        self.sats = nsats
+    def __init__(self, mass):
         self.mass = mass
         self.learning = 0.8
 

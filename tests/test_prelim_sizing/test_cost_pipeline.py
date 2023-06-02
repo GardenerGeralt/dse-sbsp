@@ -12,10 +12,9 @@ class TestCostPipeline:
     prod = np.array([])
     ait = np.array([])
     dev = np.array([])
+    pipeline = cstppl.CostPipeline(M)
     for n in range(1, 201, 1):
-        pipeline = cstppl.CostPipeline(M, n)
-        pipeline.populatecost()
-        costs = np.append(costs, [pipeline.gettotalcost()])
+        costs = np.append(costs, [pipeline.gettotalcost(n)])
         launch = np.append(launch, pipeline.launchcost)
         prod = np.append(prod, pipeline.prodcost)
         ait = np.append(ait, pipeline.aitcost)
@@ -36,7 +35,7 @@ class TestCostPipeline:
     #plt.plot(x, prod, color='blue')
     #plt.plot(x, ait, color='red')
     #plt.plot(x, dev, color='pink')
-    #plt.show()
+    # plt.show()
     #plt.savefig()
 
     # print(np.argmin(costs))

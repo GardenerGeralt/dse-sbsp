@@ -6,13 +6,12 @@ import src.prelim_sizing.cost_ansys.ait_cost as ait
 
 class CostPipeline:
 
-    def __init__(self, sysmass, nsat):
+    def __init__(self, sysmass):
         self.devcost = 0
         self.prodcost = 0
         self.launchcost = 0
         self.aitcost = 0
         self.sysmass = sysmass
-        self.sats = nsat
         self.subsystems = 7
         # self.distributions = [0.16,0.12,0.10,0.20,0.12,0.11,0.17]
         self.sbspmass = [0.34, 0.11, 0.3, 0.04, 0.04, 0.1, 0.07]
@@ -20,8 +19,8 @@ class CostPipeline:
         self.field = cx.Field(3, -1, 8, 0.3)
         self.ci_database = db.CiDatabase(self.field)
         self.launcher = launch.Launcher(10000000, 100000)
-        self.production = prod.Production(self.sats, self.sysmass)
-        self.AIT = ait.Ait(self.subsystems, self.sats, self.sysmass)
+        self.production = prod.Production(self.sysmass)
+        self.AIT = ait.Ait(self.subsystems, self.sysmass)
 
     def getdevcost(self):
         missionci = 0
@@ -38,22 +37,20 @@ class CostPipeline:
         #print(missionci, 'r-value:', rvalue)
         self.devcost = slope * missionci + intercept
 
-    def getprodcost(self):
-        self.prodcost = self.production.getcost(self.sysmass, self.sats)
+    def getprodcost(self, nsats):
+        self.prodcost = self.production.getcost(self.sysmass, nsats)
 
     def getlaunchcost(self):
         self.launchcost = self.launcher.getcost(self.sysmass)
 
-    def getaitcost(self):
-        self.aitcost = self.AIT.getcost()
+    def getaitcost(self, nsats):
+        self.aitcost = self.AIT.getcost(nsats)
 
-    def populatecost(self):
+    def gettotalcost(self, nsats):
         self.getdevcost()
-        self.getprodcost()
+        self.getprodcost(nsats)
         self.getlaunchcost()
-        self.getaitcost()
-
-    def gettotalcost(self):
+        self.getaitcost(nsats)
         cost = self.devcost + self.prodcost + self.launchcost + self.aitcost
 
         return cost

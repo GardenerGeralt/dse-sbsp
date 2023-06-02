@@ -58,9 +58,9 @@ class CiDatabase:
         slope = regressor.slope
         intercept = regressor.intercept
         rvalue = regressor.rvalue
-        plt.scatter(civals, costvals)
+        # plt.scatter(civals, costvals)
         cicustom = np.arange(0.0, 6.5, 0.5)
         costcustom = cicustom*slope+intercept
-        plt.plot(cicustom, costcustom)
+        # plt.plot(cicustom, costcustom)
         #plt.show()
         return slope, intercept, rvalue

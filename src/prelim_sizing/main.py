@@ -3,11 +3,12 @@ import transmit_ansys.transmit_methods as tm
 import orbit_ansys.orbit_ansys as oa
 import cost_ansys.cost_ansys as ca
 import cost_ansys.cost_pipeline as cp
+import src.Reliability.sys_reliability as sr
 import pandas as pd
 from math import ceil
 
-EPS2DRY = 2.
-DRY2WET = 1.72
+EPS2DRY = 3
+DRY2WET = 1.2
 
 COLLECTORS = pd.read_csv("collect_ansys/pv_cells.csv", index_col=0, header=0)
 TRANSMITTERS = pd.read_csv("transmit_ansys/transmitters.csv", index_col=0, header=0)
@@ -77,6 +78,10 @@ def main(designs, power_rx):
         cost_pipe = cp.CostPipeline(wet_mass)
         nsat, cost_total = cost_pipe.gettotalcost()
         scmass = wet_mass/nsat
+        sys_rel = sr.SystemReliability(nsat, 0.95, 0.95)
+        sys_rel.costinfo(1e9, cost_pipe.prodcost/nsat)
+        sat_rel = sys_rel.getReqSatRel()
+        req_buffer = sys_rel.getBuffer()
         print(collector.size(power_tx))
         print(mass_tx)
 
@@ -90,6 +95,7 @@ def main(designs, power_rx):
                                                         "Total cost [M$]": [cost_total],
                                                         "Min cost no. Sats": [nsat],
                                                         "Mass per S/C [kg]": [scmass],
+                                                        "Required S/C buffer": [req_buffer],
                                                         "Nr. of launches": [launcher.n_launches(wet_mass)],
                                                         "Contact altitude [m]": [contact_altitude],
                                                         "RX beam width [m]": [receiver_width]})], ignore_index=True)

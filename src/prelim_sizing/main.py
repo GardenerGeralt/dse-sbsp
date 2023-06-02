@@ -2,6 +2,7 @@ import collect_ansys.collect_methods as cm
 import transmit_ansys.transmit_methods as tm
 import orbit_ansys.orbit_ansys as oa
 import cost_ansys.cost_ansys as ca
+import cost_ansys.cost_pipeline as cp
 import pandas as pd
 from math import ceil
 
@@ -73,7 +74,9 @@ def main(designs, power_rx):
         _, mass_collect = collector.size(power_tx, total=True)
         dry_mass = (mass_tx + mass_collect) * EPS2DRY / contact_time_fraction
         wet_mass = dry_mass * DRY2WET
-        cost_total = launcher.cost(wet_mass)
+        cost_pipe = cp.CostPipeline(wet_mass)
+        nsat, cost_total = cost_pipe.gettotalcost()
+        scmass = wet_mass/nsat
         print(collector.size(power_tx))
         print(mass_tx)
 
@@ -85,6 +88,8 @@ def main(designs, power_rx):
         design_df = pd.concat([design_df, pd.DataFrame({"Concept name": [design[0]],
                                                         "Total mass [kg]": [wet_mass],
                                                         "Total cost [M$]": [cost_total],
+                                                        "Min cost no. Sats": [nsat],
+                                                        "Mass per S/C [kg]": [scmass],
                                                         "Nr. of launches": [launcher.n_launches(wet_mass)],
                                                         "Contact altitude [m]": [contact_altitude],
                                                         "RX beam width [m]": [receiver_width]})], ignore_index=True)

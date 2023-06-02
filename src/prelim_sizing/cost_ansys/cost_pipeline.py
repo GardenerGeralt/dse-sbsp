@@ -3,6 +3,8 @@ import src.prelim_sizing.complexity.ci_database as db
 import src.prelim_sizing.cost_ansys.launch_cost as launch
 import src.prelim_sizing.cost_ansys.production_cost as prod
 import src.prelim_sizing.cost_ansys.ait_cost as ait
+import numpy as np
+
 
 class CostPipeline:
 
@@ -46,7 +48,7 @@ class CostPipeline:
     def getaitcost(self, nsats):
         self.aitcost = self.AIT.getcost(nsats)
 
-    def gettotalcost(self, nsats):
+    def getcost(self, nsats):
         self.getdevcost()
         self.getprodcost(nsats)
         self.getlaunchcost()
@@ -54,3 +56,20 @@ class CostPipeline:
         cost = self.devcost + self.prodcost + self.launchcost + self.aitcost
 
         return cost
+
+    def gettotalcost(self):
+        costs = np.array([])
+        launch = np.array([])
+        prod = np.array([])
+        ait = np.array([])
+        dev = np.array([])
+        for n in range(1, 201, 1):
+            costs = np.append(costs, [self.getcost(n)])
+            launch = np.append(launch, self.launchcost)
+            prod = np.append(prod, self.prodcost)
+            ait = np.append(ait, self.aitcost)
+            dev = np.append(dev, self.devcost)
+        n_id = np.argmin(costs)
+        cost_id = np.min(costs)
+
+        return n_id+1, cost_id

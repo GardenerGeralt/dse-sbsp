@@ -1,3 +1,3 @@
 Transmitter name,Frequency [Hz],TX efficiency [-],RX efficiency [-],TX gain [dB],RX gain [dB],Min. beam width [m],M squared [-],Spec. mass [kg/W]
 Microwave,5.8e9,0.855,0.83,60,60,,,1.28e-3
-Laser,2.65e14,0.4,0.3,,,0.1,3,1e-3
+Laser,2.65e14,0.3,0.33,,,0.1,3,1e-3

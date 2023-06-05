@@ -33,17 +33,21 @@ class SafetyFactors:
 
 
 class Loading:
-    def __init__(self, qs_axial, qs_lateral):
+    def __init__(self, qs_axial, qs_lateral, qs_freq_ax, qs_freq_lat):
         """
             Set the launch loads on the structure.
             Args:
                 qs_axial: [min, max] Quasi-static axial load
                 qs_lateral: [min, max] Quasi-static lateral load
+                qs_freq_ax: [min, max] Quasi-static axial frequency
+                qs_freq_lat: [min, max] Quasi-static lateral frequency
             Returns:
 
         """
         self.qs_axial = qs_axial
         self.qs_lateral = qs_lateral
+        self.qs_freq_ax = qs_freq_ax
+        self.qs_freq_lat = qs_freq_lat
 
     def _normal_force(self, z, thickness, structure, safety_factor):
         return safety_factor * self.qs_axial * G_ACCELERATION * \
@@ -133,6 +137,20 @@ class Structure:
         buckling_loads = [_crit_buckling(), _crippling(), self.material.yield_strength]
         return np.min(buckling_loads)
 
+    def ax_natural_freq(self, thickness, loading):
+        f_load_mass = (1 / (2 * np.pi)) * (self.material.elastic_mod * self.cs_area(thickness) /
+                                           (self.load_mass * self.height / 2)) ** 0.5
+        return f_load_mass
+
+    def lat_natural_freq(self, thickness, loading):
+        f_struct_mass = 0.56 * (self.material.elastic_mod * self.i_xx(thickness) /
+                                ((G_ACCELERATION * loading.qs_lateral *
+                                  self.material.density * self.cs_area(thickness)) * self.height ** 4)) ** 0.5
+        f_load_mass = (1 / (2 * np.pi)) * (3 * self.material.elastic_mod * self.i_xx(thickness) /
+                                           ((G_ACCELERATION * loading.qs_lateral * self.load_mass) *
+                                            (self.height / 2) ** 3)) ** 0.5
+        return min(f_struct_mass, f_load_mass)
+
     def structure_mass(self, thickness):
         return self.material.density * self.cs_area(thickness) * self.height
 
@@ -171,7 +189,10 @@ class Structure:
                               < self.material.ultimate_strength)
             buckl_safe = np.all(np.abs(loading.normal_stress(self.height/2, thickness, self, safety_factors.fos_dyl))
                                 < self.buckling_load(thickness))  # TODO: check buckling load at all heights
-            return yield_safe and ult_safe and buckl_safe
+            ax_vibration_safe = self.ax_natural_freq(thickness, loading) > loading.qs_freq_ax
+            lat_vibration_safe = self.lat_natural_freq(thickness, loading) > loading.qs_freq_lat
+            vibration_safe = ax_vibration_safe and lat_vibration_safe
+            return yield_safe and ult_safe and buckl_safe and vibration_safe
 
         def _find_thickness():
             thick_arr = np.linspace(*thickness_range)[1:]

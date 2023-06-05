@@ -2,7 +2,7 @@ from numpy import pi, sqrt, tan, exp
 
 
 class Laser:
-    def __init__(self, dcrf_eff=0.3, wavelength=800e-9, w0=0.1, m2=3, P_0=500, z=100000):
+    def __init__(self, dcrf_eff=0.33, wavelength=800e-9, w0=0.1, m2=3, P_0=500, z=100000):
         """
         :param dcrf_eff: DC to RF efficiency [-]
         :param wavelength: wavelength of laser [m]

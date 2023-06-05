@@ -159,3 +159,21 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 /src/database/token.json
+/.idea/shelf/Changes.xml
+/.idea/DSE.iml
+/.idea/misc.xml
+/.idea/shelf/now_orbit_plot_shows.xml
+/.idea/other.xml
+/.idea/inspectionProfiles/profiles_settings.xml
+/.idea/inspectionProfiles/Project_Default.xml
+/.idea/shelf/Changes/shelved.patch
+/.idea/shelf/now_orbit_plot_shows/shelved.patch
+/.idea/shelf/Uncommitted_changes_before_Checkout_at_16_05_2023_14_46_[Changes]/shelved.patch
+/.idea/shelf/Uncommitted_changes_before_Checkout_at_16_05_2023_14_46_[Changes]1/shelved.patch
+/.idea/shelf/Uncommitted_changes_before_Checkout_at_30_05_2023_14_58_[Changes]/shelved.patch
+/.idea/shelf/Uncommitted_changes_before_Checkout_at_30_05_2023_14_58_[Changes]1/shelved.patch
+/.idea/shelf/Uncommitted_changes_before_Update_at_26_05_2023_15_02_[Changes]/shelved.patch
+/.idea/shelf/Uncommitted_changes_before_Checkout_at_16_05_2023_14_46__Changes_.xml
+/.idea/shelf/Uncommitted_changes_before_Checkout_at_30_05_2023_14_58__Changes_.xml
+/.idea/vcs.xml
+/.idea/workspace.xml

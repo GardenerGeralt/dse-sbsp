@@ -160,3 +160,8 @@ cython_debug/
 #.idea/
 /src/database/token.json
 .idea/workspace.xml
+/.idea/DSE.iml
+/.idea/misc.xml
+/.idea/inspectionProfiles/profiles_settings.xml
+/.idea/inspectionProfiles/Project_Default.xml
+/.idea/vcs.xml

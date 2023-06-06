@@ -17,10 +17,11 @@ from scipy.special import ellipe, ellipeinc
 import plotly.graph_objects as go
 from orbit_params import *
 from orbit_func import *
+from src.plotting.plots import line_plot
 
-# import plotly.io as io
+#import plotly.io as io
 
-# io.renderers.default = 'browser'
+#io.renderers.default = 'browser'
 
 
 class Orbit:
@@ -39,30 +40,32 @@ class Orbit:
             time_point = self.t_array[i]
             mean_anomaly = time_point / self.T * 2 * np.pi
             eccentric_anomaly = fsolve(lambda E: E - ECC * sin(E) - mean_anomaly, mean_anomaly)[0]
-            self.theta_array[i] = 2 * np.arctan2(
-                tan(eccentric_anomaly / 2), np.sqrt((1 - ECC) / (1 + ECC))
-            )
+            theta = 2 * np.arctan2(tan(eccentric_anomaly / 2), np.sqrt((1 - ECC) / (1 + ECC)))
+            if theta < 0:
+                theta = 2 * np.pi + theta
+            self.theta_array[i] = theta
         self.orbit = position3D(SMA, ECC, INC, RAAN, AOP, TA=self.theta_array)
         for i in range(3):
             self.orbit[i][np.where(np.abs(self.orbit[i]) < 0.0001)[0]] = 0
 
-        # Find the angles between all orbital points and the lunar South Pole
+        # Find the self.angles between all orbital points and the lunar South Pole
         norm = np.array([0, 0, -1])
-        angles = []
+        self.angles = []
         for i in range(len(self.orbit[0])):
             vec = np.array([self.orbit[0][i], self.orbit[1][i], self.orbit[2][i] + R_M])
             vec = vec / np.sqrt(vec.dot(vec))
             angle = np.arccos(np.dot(vec, norm))
-            angles.append(angle)
-        self.trans_idx = np.where(np.array(angles) <= trans_angle)[0]
+            self.angles.append(angle)
+        self.angles = np.array(self.angles)
+        self.trans_idx = np.where(np.array(self.angles) <= trans_angle)[0]
 
-        # Transmission time
+        # --===== Transmission time  =====--
         if self.trans_idx.size > 0:
             t_transmit = self.t_array[self.trans_idx][-1] - self.t_array[self.trans_idx][0]
         else:
             t_transmit = 0
 
-        # Transmission altitude
+        # --===== Transmission altitude  =====--
         if self.trans_idx.size > 0:
             alts = []
             for i in range(len(self.trans_idx)):
@@ -79,10 +82,10 @@ class Orbit:
             alt_transmit = float("NaN")
             alt_min = float("NaN")
             alt_max = float("NaN")
-        # Time-averaged angle of incidence
-        theta_transmit = np.average(np.array(angles)[self.trans_idx])
+        # --===== Time-averaged angle of incidence  =====--
+        theta_transmit = np.average(np.array(self.angles)[self.trans_idx])
 
-        # # Eclipse time
+        # --===== Eclipse time  =====--
         # eclipse_times = []
         # for theta_s in range(0, 360 + res_e, res_e):
         #     theta_s = deg2rad(theta_s)
@@ -139,7 +142,7 @@ class Orbit:
             normal_vec = np.cross(plane_3D[0], plane_3D[1])
 
             ref = position3D(SMA, ECC, INC, RAAN, AOP, TA=deg2rad(0))
-            angles = []
+            self.angles = []
             for i in range(0, -2, -1):
                 point = np.array(
                     [
@@ -162,7 +165,7 @@ class Orbit:
                 TA_point = -1 * np.arctan2(det, dot)
                 if TA_point < 0:
                     TA_point = 2 * np.pi + TA_point
-                angles.append(TA_point)
+                self.angles.append(TA_point)
 
             # Integrate ellipse equation
             b = np.sqrt(SMA**2 * (1 - ECC**2))
@@ -170,7 +173,7 @@ class Orbit:
             perim = 4 * SMA * ellipe(m)
             spacing = perim / n_sat
 
-            T0, T1 = angles[0], angles[1]
+            T0, T1 = self.angles[0], self.angles[1]
             t0 = ellipeinc(T0 - 0.5 * np.pi, m)
             t1 = ellipeinc(T1 - 0.5 * np.pi, m)
             arclength = SMA * (t1 - t0)
@@ -179,6 +182,14 @@ class Orbit:
             spacing = float("NaN")
         sat_in_view = arclength / spacing
         '''
+
+        # --===== AOCS angle =====--
+        self.r = np.sqrt(self.orbit[0]**2+self.orbit[1]**2+self.orbit[2]**2)
+        self.AOCS12 = np.arctan2(sin(pi-self.theta_array),(cos(pi-self.theta_array)-R_M/self.r))
+        self.AOCS11 = np.linspace(0,self.AOCS12[self.trans_idx[0]-1],self.trans_idx[0])
+        self.AOCS13 = np.linspace(self.AOCS12[self.trans_idx[-1]+1],0,len(self.AOCS12)-(self.trans_idx[-1]+1))
+        self.AOCS1 = np.concatenate((self.AOCS11,self.AOCS12[self.trans_idx],self.AOCS13))
+
         # --===== Report data =====--
         print("-Pericenter altitude = " + str(round(SMA * (1 - ECC) - R_M, 2)))
         print("-Apocenter altitude = " + str(round(SMA * (1 + ECC) - R_M, 2)))
@@ -206,8 +217,7 @@ class Orbit:
             + str(round(sat_in_view, 2))
             + " satellites can transmit at the same time."
         )
-        print(self.orbit[:, 5000])
-
+        #print(self.orbit[:, 5000])
 
 class OrbitPlot(Orbit):
     def __init__(self, orbparams):
@@ -442,6 +452,10 @@ class OrbitPlot(Orbit):
             sliders=sliders
         )
 
+    def plot_angle(self):
+        #line_plot(x_data=rad2deg(self.theta_array[:self.trans_idx[0]]), y_data=rad2deg(self.AOCS1[:self.trans_idx[0]]))
+        #line_plot(x_data=rad2deg(self.theta_array[self.trans_idx]), y_data=rad2deg(self.AOCS12[self.trans_idx]))
+        line_plot(x_data=self.t_array, y_data=rad2deg(self.AOCS1))
     def plot_all(self):
         self.plot_moon()
         self.plot_cone()

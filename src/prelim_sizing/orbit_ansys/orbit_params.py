@@ -12,12 +12,6 @@ INC = deg2rad(60)  # [rad]
 RAAN = deg2rad(0)  # [rad]
 AOP = deg2rad(90)  # [rad]
 
-SMA = 2200
-ECC = 0.09547
-INC = deg2rad(84.8)
-RAAN = deg2rad(0)
-AOP = deg2rad(90)
-
 orbpar = [SMA, ECC, INC, RAAN, AOP]
 
 # Satellite params

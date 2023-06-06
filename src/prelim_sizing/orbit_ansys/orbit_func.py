@@ -4,19 +4,19 @@ from numpy import sin, cos, tan, pi
 
 # General orbit
 def deg2rad(value):
-    return value * pi / 180
+    return np.multiply(value,pi/180)
 
 
 def rad2deg(value):
-    return value * 180 / pi
+    return np.multiply(value,180/pi)
 
 
 def sec2hrs(value):
-    return value / 3600
+    return np.multiply(value,1/3600)
 
 
 def percentage(part, total):
-    return part / total * 100
+    return np.multiply(part,100/total)
 
 
 def position3D(SMA, ECC, INC, RAAN, AOP, TA):

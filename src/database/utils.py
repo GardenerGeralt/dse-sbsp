@@ -18,6 +18,9 @@ SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly']
 # https://docs.google.com/spreadsheets/d/18_1BmTraUsLMjflzU0s_KM_ePtelgOcl3MM1CwmqQzs/edit?usp=sharing
 SPREADSHEET_ID = '18_1BmTraUsLMjflzU0s_KM_ePtelgOcl3MM1CwmqQzs'
 
+TOKEN_FILE = r"C:\Users\mikem\dse-sbsp\src\database\token.json"
+CREDENTIALS = r"C:\Users\mikem\dse-sbsp\src\database\credentials.json"
+
 
 def read(sheet='current', cell_range='A1:B100'):
     """
@@ -40,18 +43,18 @@ def read(sheet='current', cell_range='A1:B100'):
     # The file token.json stores the user's access and refresh tokens, and is
     # created automatically when the authorization flow completes for the first
     # time.
-    if os.path.exists('token.json'):
-        creds = Credentials.from_authorized_user_file('token.json', SCOPES)
+    if os.path.exists(TOKEN_FILE):
+        creds = Credentials.from_authorized_user_file(TOKEN_FILE, SCOPES)
     # If there are no (valid) credentials available, let the user log in.
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
             creds.refresh(Request())
         else:
             flow = InstalledAppFlow.from_client_secrets_file(
-                'credentials.json', SCOPES)
+                CREDENTIALS, SCOPES)
             creds = flow.run_local_server(port=0)
         # Save the credentials for the next run
-        with open('token.json', 'w') as token:
+        with open(TOKEN_FILE, 'w') as token:
             token.write(creds.to_json())
 
     try:
@@ -67,7 +70,7 @@ def read(sheet='current', cell_range='A1:B100'):
         if not values:
             raise IOError('No data found.')
 
-        values_dict = {values[row][0]: float(values[row][1]) for row in range(len(values))}
+        values_dict = {values[row][0]: float(values[row][1]) for row in range(len(values)) if len(values[row]) == 2}
 
         return values_dict
 

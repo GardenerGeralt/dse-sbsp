@@ -169,3 +169,4 @@ cython_debug/
 
 # Database credentials
 /src/database/token.json
+/src/database/token_copy.json

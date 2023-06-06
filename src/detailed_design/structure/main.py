@@ -1,5 +1,6 @@
 import utils as ut
 import src.gen_eng.materials as gem
+import src.database.utils as dbu
 
 
 def main():
@@ -7,6 +8,7 @@ def main():
 
 
 if __name__ == "__main__":
+    print(dbu.read())
     fos = ut.SafetyFactors(1.25, 1.00, 1.00, 1.00, 1.25, 1.25)
     loading = ut.Loading(6, 2, 15, 8)
     aluminum = gem.StructuralMaterial(2700, 69e9, 255e6, 290e6, 0.33, 1)

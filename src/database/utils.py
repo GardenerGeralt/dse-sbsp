@@ -18,8 +18,9 @@ SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly']
 # https://docs.google.com/spreadsheets/d/18_1BmTraUsLMjflzU0s_KM_ePtelgOcl3MM1CwmqQzs/edit?usp=sharing
 SPREADSHEET_ID = '18_1BmTraUsLMjflzU0s_KM_ePtelgOcl3MM1CwmqQzs'
 
-TOKEN_FILE = r"C:\Users\mikem\dse-sbsp\src\database\token.json"
-CREDENTIALS = r"C:\Users\mikem\dse-sbsp\src\database\credentials.json"
+my_path = os.path.abspath(os.path.dirname(__file__))
+TOKEN_FILE = os.path.join(my_path, r"token.json")
+CREDENTIALS = os.path.join(my_path, r"credentials.json")
 
 
 def read(sheet='current', cell_range='A1:B100'):

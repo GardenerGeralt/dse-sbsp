@@ -55,7 +55,7 @@ if __name__ == "__main__":
     # radiator = cm.Radiator(0.9, 2700, 125e-6)  # aluminium radiator
     power_required = 1e6
     collect = cm.Collector(sample_pv_cell, fresnel_lens, radiator)
-    print(collect.size(power_required))
+    # print(collect.size(power_required))
 
     main(pv_cells, solar_sail, radiator, power_required, plot=True)
 

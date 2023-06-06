@@ -7,8 +7,8 @@ import src.Reliability.sys_reliability as sr
 import pandas as pd
 from math import ceil
 
-EPS2DRY = 3
-DRY2WET = 1.2
+EPS2DRY = 2
+DRY2WET = 1.72
 
 COLLECTORS = pd.read_csv("collect_ansys/pv_cells.csv", index_col=0, header=0)
 TRANSMITTERS = pd.read_csv("transmit_ansys/transmitters.csv", index_col=0, header=0)
@@ -83,7 +83,7 @@ def main(designs, power_rx):
         sat_rel = sys_rel.getReqSatRel()
         req_buffer = sys_rel.getBuffer()
         print(collector.size(power_tx))
-        print(mass_tx)
+        # print(mass_tx)
 
         if isinstance(transmitter, tm.Laser):
             receiver_width = transmitter.calc_beam_width(contact_altitude)

@@ -29,7 +29,7 @@ class Orbit:
         self.SMA = SMA
         self.ECC = ECC
         self.INC = INC
-        self.RAAN = RAAN
+        rAAN = RAAN
         self.AOP = AOP
         self.T = 2 * np.pi * np.sqrt(self.SMA**3 / mu_M)
         self.t_array = np.arange(
@@ -183,12 +183,68 @@ class Orbit:
         sat_in_view = arclength / spacing
         '''
 
-        # --===== AOCS angle =====--
-        self.r = np.sqrt(self.orbit[0]**2+self.orbit[1]**2+self.orbit[2]**2)
-        self.AOCS12 = np.arctan2(sin(pi-self.theta_array),(cos(pi-self.theta_array)-R_M/self.r))
-        self.AOCS11 = np.linspace(0,self.AOCS12[self.trans_idx[0]-1],self.trans_idx[0])
-        self.AOCS13 = np.linspace(self.AOCS12[self.trans_idx[-1]+1],0,len(self.AOCS12)-(self.trans_idx[-1]+1))
-        self.AOCS1 = np.concatenate((self.AOCS11,self.AOCS12[self.trans_idx],self.AOCS13))
+        # --===== Laser pointing =====--
+        norm_y = np.array([0, 1, 0])
+
+        z_angles = []
+        x_angles = []
+
+        for i in range(len(self.t_array))[self.trans_idx[0]-1:self.trans_idx[-1]+2]:
+            # Z angle
+            vec_xy = -np.array([self.orbit[0][i], self.orbit[1][i], 0])
+            vec_xy = vec_xy / np.sqrt(vec_xy.dot(vec_xy))
+            z_angle = np.arctan2((vec_xy[1]*norm_y[0]-vec_xy[0]*norm_y[1]),(vec_xy[0]*norm_y[0]+vec_xy[1]*norm_y[1]))
+            z_angles.append(z_angle)
+
+            # X angle
+            vec_yz = -np.array([0, self.orbit[1][i], self.orbit[2][i] + R_M])
+            vec_yz = vec_yz / np.sqrt(vec_yz.dot(vec_yz))
+            x_angle = np.arccos(np.dot(vec_yz, norm_y))
+            if self.orbit[2][i] <= 0:
+                x_angles.append(x_angle)
+            else:
+                x_angles.append(-x_angle)
+
+        # Pointing about Z axis
+        angles_z2 = z_angles[1:-1]
+        d_angles_z2 = np.gradient(angles_z2)
+        dd_angles_z2 = np.gradient(d_angles_z2)
+        angles_z1 = np.linspace(0, z_angles[0], self.trans_idx[0])
+        d_angles_z1 = np.gradient(angles_z1)
+        dd_angles_z1 = np.gradient(d_angles_z1)
+        angles_z3 = np.linspace(z_angles[-1], 0, len(self.t_array) - (self.trans_idx[-1] + 1))
+        d_angles_z3 = np.gradient(angles_z3)
+        dd_angles_z3 = np.gradient(d_angles_z3)
+
+        self.angles_z = np.concatenate((angles_z1,angles_z2,angles_z3))
+        self.d_angles_z = np.concatenate((d_angles_z1,d_angles_z2,d_angles_z3))
+        self.dd_angles_z = np.concatenate((dd_angles_z1, dd_angles_z2, dd_angles_z3))
+
+        # Pointing about X axis
+        angles_x2 = x_angles[1:-1]
+        d_angles_x2 = np.gradient(angles_x2)
+        dd_angles_x2 = np.gradient(d_angles_x2)
+
+        angles_x1 = x_angles[0] * np.ones(shape=np.shape(self.t_array[:self.trans_idx[0]]))
+        #angles_x1 = np.linspace(0, x_angles[0], self.trans_idx[0])
+
+        d_angles_x1 = np.gradient(angles_x1)
+        dd_angles_x1 = np.gradient(d_angles_x1)
+
+        angles_x3 = x_angles[-1] * np.ones(shape=np.shape(self.t_array[self.trans_idx[-1]:]))
+        # angles_x3 = np.linspace(x_angles[-1], 0, len(self.t_array) - (self.trans_idx[-1] + 1))
+
+        
+        d_angles_x3 = np.gradient(angles_x3)
+        dd_angles_x3 = np.gradient(d_angles_x3)
+
+        self.angles_x = np.concatenate((angles_x1,angles_x2,angles_x3))
+        self.d_angles_x = np.concatenate((d_angles_x1,d_angles_x2,d_angles_x3))
+        self.dd_angles_x = np.concatenate((dd_angles_x1, dd_angles_x2, dd_angles_x3))
+
+        # --===== Required yaw rate =====--
+        self.precession_rate = -(3/2) * (R_M/(self.SMA*(1-self.ECC**2)))**2 * J2_M * (2*pi/self.T) * cos(self.INC)
+        self.yaw_rate = pi/yrs2sec(0.5) + self.precession_rate
 
         # --===== Report data =====--
         print("-Pericenter altitude = " + str(round(SMA * (1 - ECC) - R_M, 2)))
@@ -209,7 +265,15 @@ class Orbit:
         print(
             "-Time-averaged angle of incidence = " + str(round(rad2deg(theta_transmit), 2)) + " deg"
         )
-        print("-Maximum eclipse time = " + str(round(sec2hrs(max_eclipse), 2)) + " hrs")
+        print(
+            "-Maximum eclipse time = " + str(round(sec2hrs(max_eclipse), 2)) + " hrs"
+        )
+        print(
+            "-Nodal precession over mission lifetime = " + str(round(rad2deg(25*yrs2sec(self.precession_rate)),2)) + " deg"
+        )
+        print(
+            f"-Yaw rate to always face the Sun = {rad2deg(self.yaw_rate):.3e} deg/s"
+        )
         print(
             "-For "
             + str(n_sat)
@@ -369,7 +433,7 @@ class OrbitPlot(Orbit):
                 ),
             ),
         )
-        print(len(self.fig.data))
+        # print(len(self.fig.data))
         # self.fig.add_trace(
         #     go.Scatter3d(
         #         x=rest_orbit2[0],
@@ -453,9 +517,28 @@ class OrbitPlot(Orbit):
         )
 
     def plot_angle(self):
-        #line_plot(x_data=rad2deg(self.theta_array[:self.trans_idx[0]]), y_data=rad2deg(self.AOCS1[:self.trans_idx[0]]))
-        #line_plot(x_data=rad2deg(self.theta_array[self.trans_idx]), y_data=rad2deg(self.AOCS12[self.trans_idx]))
-        line_plot(x_data=self.t_array, y_data=rad2deg(self.AOCS1))
+        # Z plot
+        line_plot(x_data=sec2hrs(self.t_array), y_data=rad2deg(self.angles_z),labels=['Pointing angle vs time'],
+                  x_title=r'$\text{{{}}} t\;[hrs] $'.format('Time from periapsis '),
+                  y_title=r'$\text{{{}}} \theta_z\;[deg] $'.format('Pointing angle '))
+        line_plot(x_data=sec2hrs(self.t_array), y_data=rad2deg(self.d_angles_z),labels=['Pointing angular velocity vs time'],
+                  x_title=r'$\text{{{}}} t\;[hrs] $'.format('Time from periapsis '),
+                  y_title=r'$\text{{{}}} \omega_z\;[deg/s] $'.format('Pointing angular velocity '))
+        line_plot(x_data=sec2hrs(self.t_array), y_data=rad2deg(self.dd_angles_z), labels=['Pointing angular acceleration vs time'],
+                  x_title=r'$\text{{{}}} t\;[hrs] $'.format('Time from periapsis '),
+                  y_title=r'$\text{{{}}} \alpha_z\;[deg/s^2] $'.format('Pointing angular acceleration '))
+        
+        # X plot
+        line_plot(x_data=sec2hrs(self.t_array), y_data=rad2deg(self.angles_x), labels=['Pointing angle vs time'],
+                  x_title=r'$\text{{{}}} t\;[hrs] $'.format('Time from periapsis '),
+                  y_title=r'$\text{{{}}} \theta_x\;[deg] $'.format('Pointing angle '))
+        line_plot(x_data=sec2hrs(self.t_array), y_data=rad2deg(self.d_angles_x), labels=['Pointing angular velocity vs time'],
+                  x_title=r'$\text{{{}}} t\;[hrs] $'.format('Time from periapsis '),
+                  y_title=r'$\text{{{}}} \omega_x\;[deg/s] $'.format('Pointing angular velocity '))
+        line_plot(x_data=sec2hrs(self.t_array), y_data=rad2deg(self.dd_angles_x), labels=['Pointing angular acceleration vs time'],
+                  x_title=r'$\text{{{}}} t\;[hrs] $'.format('Time from periapsis '),
+                  y_title=r'$\text{{{}}} \alpha_x\;[deg/s^2] $'.format('Pointing angular acceleration '))
+        
     def plot_all(self):
         self.plot_moon()
         self.plot_cone()

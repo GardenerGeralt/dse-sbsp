@@ -10,9 +10,12 @@ def deg2rad(value):
 def rad2deg(value):
     return np.multiply(value,180/pi)
 
-
 def sec2hrs(value):
     return np.multiply(value,1/3600)
+
+
+def yrs2sec(value):
+    return np.multiply(value,365.25*24*3600)
 
 
 def percentage(part, total):

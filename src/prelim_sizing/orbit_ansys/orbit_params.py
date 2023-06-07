@@ -4,6 +4,7 @@ from orbit_func import deg2rad
 # General constants
 R_M = 1737.4  # [km]
 mu_M = 4.9048696 * 10 ** 3  # [km^3/s^2]
+J2_M = 2.0330530 * 10 ** -4 # [-]
 
 # Orbital params
 SMA = 10529.23951  # [km]

@@ -48,6 +48,7 @@ class BatteriesBusPower:
     def calc_battery_volume(self):
         return self.stored_energy / self.E_dens
 
+"""Not used anymore"""
 class BatteriesMainPower:
     def __init__(self, p_req, T_orb, t_contact, t_eclipse_contact, E_spec, E_dens, DoD, bat_eff):
         """

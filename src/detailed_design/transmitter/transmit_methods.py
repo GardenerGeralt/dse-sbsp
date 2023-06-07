@@ -2,6 +2,7 @@ import numpy as np
 import numpy.ma as ma
 import plotly.graph_objects as go
 from scipy.integrate import simps
+from scipy.ndimage import zoom
 
 LIGHT_SPEED = 3e8  # [m/s]
 
@@ -166,10 +167,26 @@ class LaserArray:
         # From laser class
         self.module = Laser(3e8 / 976e-9, 0.43, 0.33, 5.4e-3, 4, 1)
         self.module_power = 300 # W
-        self.module_beam_width = self.module.calc_beam_width(17000)
+        self.module_beam_width = self.module.calc_beam_width(18000)
 
     def __str__(self):
-        ...
+        return (
+            f"\nLaser Array:\n"
+            f"------------------\n"
+            f"       Number of lasers : {self.n_modules},\n"
+            f"      Module spacing    : {self.module_spacing:.4e} [m],\n"
+            f"Transmitter efficiency : {self.module.eff_tx} [-],\n"
+            f"    Minimum beam width : {self.module.min_beam_width:.4e} [m],\n"
+            f"     Minimum beam area : {self.module.min_beam_area:.4e} [m2],\n"
+            f"             M squared : {self.module.m_squared} [-],\n"
+            f" Given beam divergence angle : {self.module.beam_div_angle:.4e} [rad],\n"
+            f" Calculated beam divergence angle : {self.module.beam_div_angle_c:.4e} [rad],\n"
+            f" Power per beam : {self.module_power:.4e} [W],\n"
+            f" Beam width at 18000 km : {self.module_beam_width:.4e} [m],\n"
+            f" Beam area at 18000 km : {calc_circ_area(self.module_beam_width):.4e} [m2],\n"
+            # f" Beam width at 18000 km : {self.module_beam_width:.4e} [m],\n"
+
+        )
 
     def square_array(self):
         n_mod_per_line = np.int(np.sqrt(self.n_modules))
@@ -200,9 +217,9 @@ class LaserArray:
         x = (
             self.module_spacing * np.arange(0, np.max(modules_per_line))
         )
-        print(np.shape(mask_array))
+        # print(np.shape(mask_array))
         grid = np.meshgrid(x, x)
-        print(np.shape(grid))
+        # print(np.shape(grid))
         grid = np.array([np.multiply(i, mask_array) for i in grid])
         return grid
 
@@ -214,23 +231,44 @@ class LaserArray:
         z = 2 * self.module_power / (np.pi * self.module_beam_width ** 2) * np.exp(-2 * r ** 2 / self.module_beam_width ** 2)
         return x, y, z
 
+    def gaussian_field(self):
+        trans_grid = self.circ_array()
+        zoom_factor = 1.5  # Increase resolution by a factor of 2 (adjust as needed)
+
+        # Perform zooming on the image
+        zoomed_image = zoom(trans_grid, zoom_factor)
+
+        # Round the values to the nearest integer (0 or 1)
+        zoomed_image = np.round(zoomed_image)
+
+        # Convert the values to integers (0 or 1)
+        # zoomed_image = zoomed_image.astype(int)
+        print(trans_grid)
+        print(zoomed_image)
+        print(np.size(~np.isnan(zoomed_image)))
+        return zoomed_image
+
+    def calc_total_beam_diameter(self):
+        # print(self.circ_array())
+        return np.nanmax(self.circ_array())+self.module_beam_width
+
     def plot_flat_array(self, array):
         fig = go.Figure()
 
-        for x, y in zip(array[0].flatten(), array[1].flatten()):
-            if not np.isnan(x) and not np.isnan(y):
-                fig.add_shape(
-                    type="circle",
-                    xref="x",
-                    yref="y",
-                    fillcolor="PaleTurquoise",
-                    x0=x - self.module_beam_width / 2,
-                    y0=y - self.module_beam_width / 2 ,
-                    x1=x + self.module_beam_width / 2,
-                    y1=y + self.module_beam_width / 2,
-                    line_color="LightSeaGreen",
-                    opacity=0.05,
-                )
+        # for x, y in zip(array[0].flatten(), array[1].flatten()):
+        #     if not np.isnan(x) and not np.isnan(y):
+        #         fig.add_shape(
+        #             type="circle",
+        #             xref="x",
+        #             yref="y",
+        #             fillcolor="PaleTurquoise",
+        #             x0=x - self.module_beam_width / 2,
+        #             y0=y - self.module_beam_width / 2 ,
+        #             x1=x + self.module_beam_width / 2,
+        #             y1=y + self.module_beam_width / 2,
+        #             line_color="LightSeaGreen",
+        #             opacity=0.05,
+        #         )
         fig.add_trace(go.Scatter(
             x=array[0].flatten(),
             y=array[1].flatten(),
@@ -244,7 +282,7 @@ class LaserArray:
         ))
         # fig.data = fig.data[::-1]
         fig.update_layout(
-            autosize=False,
+            autosize=True,
             width=1000,
             height=1000,
             margin=dict(l=50, r=50, b=50, t=50, pad=4),
@@ -257,7 +295,7 @@ class LaserArray:
 
     def plot_3d_array(self, array):
         x, y, z = self.gaussian_spot(5)
-        print(np.max(z))
+        # print(np.max(z))
         # print(simps(simps(z.flatten(), y.flatten()), x.flatten()))
         # VERIFY WITH INTEGRAL!!!!!!!!!!!!!!!!!!!!!
         # integ = power_tx*(1-np.exp(-1/2))
@@ -281,3 +319,7 @@ class LaserArray:
                           margin=dict(l=50, r=50, b=50, t=50))
         fig.show()
         return x,y,z
+
+    def calc_pointing_accuracy(self, distance, size_rx):
+        return np.arctan(0.5*(size_rx-self.calc_total_beam_diameter())/distance)
+        # return np.arctan(0.5 * (size_rx - 5) / distance)

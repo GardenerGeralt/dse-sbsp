@@ -22,10 +22,15 @@ if __name__ == "__main__":
     laser.beam_div_angle = 0.0065*np.pi/180
     print(laser.calc_beam_width(17000))
     # .line_plot(L, laser.flux)
-    array = tm.LaserArray(177, 0.055)
+    array = tm.LaserArray(177, 0.06)
     print(array.circ_array())
     # print(array.square_array(0.1))
+    array.gaussian_field()
     array.plot_flat_array(array.circ_array())
+    print(array.module_beam_width)
+    print(array.calc_total_beam_diameter())
+    print(array.calc_pointing_accuracy(18e6, 10))
+    print(array)
     # array.plot_3d_array(array.circ_array())
     # print('Time'+r'$t\;[hours]$')
 

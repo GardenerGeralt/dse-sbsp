@@ -19,7 +19,7 @@ orbpar = [SMA, ECC, INC, RAAN, AOP]
 n_sat = 80
 
 # Transmitter params
-trans_angle = deg2rad(70)
+trans_angle = deg2rad(68.2)
 
 # Resolution?
 res_t = 10000

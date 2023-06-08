@@ -86,32 +86,32 @@ class Orbit:
         theta_transmit = np.average(np.array(self.angles)[self.trans_idx])
 
         # --===== Eclipse time  =====--
-        # eclipse_times = []
-        # for theta_s in range(0, 360 + res_e, res_e):
-        #     theta_s = deg2rad(theta_s)
-        #     d = []
-        #     phi = []
-        #     print(str(round(theta_s / (2 * np.pi) * 100, 1)) + " %")
-        #     for i in range(len(orbit[0])):
-        #         x_sat, y_sat, z_sat = orbit[0][i], orbit[1][i], orbit[2][i]
-        #         x_i = (x_sat + tan(theta_s) * y_sat) / (1 + (tan(theta_s)) ** 2)
-        #         y_i = tan(theta_s) * x_i
-        #         d_i = np.sqrt((x_sat - x_i) ** 2 + (y_sat - y_i) ** 2 + z_sat ** 2)
-        #         d.append(d_i)
-        #         phi_i = np.arctan2(y_sat, x_sat)
-        #         if phi_i < 0:
-        #             phi_i = 2 * np.pi + phi_i
-        #         phi.append(phi_i)
-        #     ecl = np.where((d < np.ones(np.shape(d)) * R_M) & (phi > np.ones(np.shape(phi)) * (theta_s + np.pi / 2)) & (
-        #                 phi < np.ones(np.shape(phi)) * (theta_s + 3 * np.pi / 2)))
-        #     if ecl[0].size > 0:
-        #         eclipse_time = t_array[ecl][-1] - t_array[ecl][0]
-        #     else:
-        #         eclipse_time = 0
-        #     eclipse_times.append(eclipse_time)
-        # max_eclipse = np.max(eclipse_times)
+        eclipse_times = []
+        for theta_s in range(0, 360 + res_e, res_e):
+            theta_s = deg2rad(theta_s)
+            d = []
+            phi = []
+            print(str(round(theta_s / (2 * np.pi) * 100, 1)) + " %")
+            for i in range(len(self.orbit[0])):
+                x_sat, y_sat, z_sat = self.orbit[0][i], self.orbit[1][i], self.orbit[2][i]
+                x_i = (x_sat + tan(theta_s) * y_sat) / (1 + (tan(theta_s)) ** 2)
+                y_i = tan(theta_s) * x_i
+                d_i = np.sqrt((x_sat - x_i) ** 2 + (y_sat - y_i) ** 2 + z_sat ** 2)
+                d.append(d_i)
+                phi_i = np.arctan2(y_sat, x_sat)
+                if phi_i < 0:
+                    phi_i = 2 * np.pi + phi_i
+                phi.append(phi_i)
+            ecl = np.where((d < np.ones(np.shape(d)) * R_M) & (phi > np.ones(np.shape(phi)) * (theta_s + np.pi / 2)) & (
+                        phi < np.ones(np.shape(phi)) * (theta_s + 3 * np.pi / 2)))
+            if ecl[0].size > 0:
+                eclipse_time = self.t_array[ecl][-1] - self.t_array[ecl][0]
+            else:
+                eclipse_time = 0
+            eclipse_times.append(eclipse_time)
+        max_eclipse = np.max(eclipse_times)
 
-        max_eclipse = 0
+        # max_eclipse = 0
         self.ecl_idx = np.where(
             (self.orbit[0] > 0) & (np.sqrt(self.orbit[1] ** 2 + self.orbit[2] ** 2) < R_M)
         )[0]
@@ -124,64 +124,6 @@ class Orbit:
         else:
             sat_in_view = float("NaN")
             self.trans_idx = [0]
-        '''
-        if self.index.size > 0:
-            l1 = cos(RAAN) * cos(AOP) - sin(RAAN) * sin(AOP) * cos(INC)
-            l2 = -cos(RAAN) * sin(AOP) - sin(RAAN) * cos(AOP) * cos(INC)
-            m1 = sin(RAAN) * cos(AOP) + cos(RAAN) * sin(AOP) * cos(INC)
-            m2 = -sin(RAAN) * sin(AOP) + cos(RAAN) * cos(AOP) * cos(INC)
-            n1 = sin(AOP) * sin(INC)
-            n2 = cos(AOP) * sin(INC)
-
-            # Find normal vector
-            plane_2D = [[0, 1], [1, 0]]
-            plane_3D = []
-            transform = np.array([[l1, l2], [m1, m2], [n1, n2]])
-            for i in range(2):
-                plane_3D.append(np.matmul(transform, plane_2D[i]))
-            normal_vec = np.cross(plane_3D[0], plane_3D[1])
-
-            ref = position3D(SMA, ECC, INC, RAAN, AOP, TA=deg2rad(0))
-            self.angles = []
-            for i in range(0, -2, -1):
-                point = np.array(
-                    [
-                        self.orbit[0][self.trans_idx[i]],
-                        self.orbit[1][self.trans_idx[i]],
-                        self.orbit[2][self.trans_idx[i]],
-                    ]
-                )
-
-                # Find angle
-                dot = np.dot(ref, point)
-                det = (
-                    ref[0] * point[1] * normal_vec[2]
-                    + point[0] * normal_vec[1] * ref[2]
-                    + normal_vec[0] * ref[1] * point[2]
-                    - ref[2] * point[1] * normal_vec[0]
-                    - point[2] * normal_vec[1] * ref[0]
-                    - normal_vec[2] * ref[1] * point[0]
-                )
-                TA_point = -1 * np.arctan2(det, dot)
-                if TA_point < 0:
-                    TA_point = 2 * np.pi + TA_point
-                self.angles.append(TA_point)
-
-            # Integrate ellipse equation
-            b = np.sqrt(SMA**2 * (1 - ECC**2))
-            m = ECC**2
-            perim = 4 * SMA * ellipe(m)
-            spacing = perim / n_sat
-
-            T0, T1 = self.angles[0], self.angles[1]
-            t0 = ellipeinc(T0 - 0.5 * np.pi, m)
-            t1 = ellipeinc(T1 - 0.5 * np.pi, m)
-            arclength = SMA * (t1 - t0)
-        if self.trans_idx.size == 0:
-            arclength = float("NaN")
-            spacing = float("NaN")
-        sat_in_view = arclength / spacing
-        '''
 
         # --===== Laser pointing =====--
         norm_y = np.array([0, 1, 0])
@@ -224,17 +166,10 @@ class Orbit:
         angles_x2 = x_angles[1:-1]
         d_angles_x2 = np.gradient(angles_x2)
         dd_angles_x2 = np.gradient(d_angles_x2)
-
         angles_x1 = x_angles[0] * np.ones(shape=np.shape(self.t_array[:self.trans_idx[0]]))
-        #angles_x1 = np.linspace(0, x_angles[0], self.trans_idx[0])
-
         d_angles_x1 = np.gradient(angles_x1)
         dd_angles_x1 = np.gradient(d_angles_x1)
-
         angles_x3 = x_angles[-1] * np.ones(shape=np.shape(self.t_array[self.trans_idx[-1]:]))
-        # angles_x3 = np.linspace(x_angles[-1], 0, len(self.t_array) - (self.trans_idx[-1] + 1))
-
-        
         d_angles_x3 = np.gradient(angles_x3)
         dd_angles_x3 = np.gradient(d_angles_x3)
 
@@ -247,8 +182,8 @@ class Orbit:
         self.yaw_rate = pi/yrs2sec(0.5) + self.precession_rate
 
         # --===== Report data =====--
-        print("-Pericenter altitude = " + str(round(SMA * (1 - ECC) - R_M, 2)))
-        print("-Apocenter altitude = " + str(round(SMA * (1 + ECC) - R_M, 2)))
+        print("-Periapsis altitude = " + str(round(SMA * (1 - ECC) - R_M, 2)))
+        print("-Apoapsis altitude = " + str(round(SMA * (1 + ECC) - R_M, 2)))
         print("-Transmission time = " + str(round(sec2hrs(t_transmit), 2)) + " hrs")
         print("-Transmission percentage = " + str(round(percentage(t_transmit, self.T), 2)) + " %")
         print(
@@ -281,6 +216,13 @@ class Orbit:
             + str(round(sat_in_view, 2))
             + " satellites can transmit at the same time."
         )
+        print(
+            "-Laser pointing z-angle range = " + str(round(rad2deg(np.max(self.angles_z)-np.min(self.angles_z)),2)) + " deg"
+        )
+        print(
+            "-Laser pointing x-angle range = " + str(round(rad2deg(np.max(self.angles_x) - np.min(self.angles_x)), 2)) + " deg"
+        )
+        # pr
         #print(self.orbit[:, 5000])
 
 class OrbitPlot(Orbit):

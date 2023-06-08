@@ -84,34 +84,40 @@ class Orbit:
             alt_max = float("NaN")
         # --===== Time-averaged angle of incidence  =====--
         theta_transmit = np.average(np.array(self.angles)[self.trans_idx])
+        cos_transmit = np.average(cos(np.array(self.angles)[self.trans_idx]))
 
         # --===== Eclipse time  =====--
         eclipse_times = []
+        d = []
+        phi = []
         for theta_s in range(0, 360 + res_e, res_e):
             theta_s = deg2rad(theta_s)
-            d = []
-            phi = []
             print(str(round(theta_s / (2 * np.pi) * 100, 1)) + " %")
-            for i in range(len(self.orbit[0])):
-                x_sat, y_sat, z_sat = self.orbit[0][i], self.orbit[1][i], self.orbit[2][i]
-                x_i = (x_sat + tan(theta_s) * y_sat) / (1 + (tan(theta_s)) ** 2)
-                y_i = tan(theta_s) * x_i
-                d_i = np.sqrt((x_sat - x_i) ** 2 + (y_sat - y_i) ** 2 + z_sat ** 2)
-                d.append(d_i)
-                phi_i = np.arctan2(y_sat, x_sat)
-                if phi_i < 0:
-                    phi_i = 2 * np.pi + phi_i
-                phi.append(phi_i)
-            ecl = np.where((d < np.ones(np.shape(d)) * R_M) & (phi > np.ones(np.shape(phi)) * (theta_s + np.pi / 2)) & (
-                        phi < np.ones(np.shape(phi)) * (theta_s + 3 * np.pi / 2)))
-            if ecl[0].size > 0:
-                eclipse_time = self.t_array[ecl][-1] - self.t_array[ecl][0]
-            else:
-                eclipse_time = 0
-            eclipse_times.append(eclipse_time)
+            for theta_i in np.linspace(-declination,declination,5):
+                for i in range(len(self.orbit[0])):
+                    x_sat, y_sat, z_sat = self.orbit[0][i], self.orbit[1][i], self.orbit[2][i]
+                    x_i = (x_sat + tan(theta_s) * y_sat) / (1 + (tan(theta_s)) ** 2)
+                    y_i = tan(theta_s) * x_i
+
+                    d_i = np.sqrt((x_sat - x_i) ** 2 + (y_sat - y_i) ** 2 + (z_sat - np.sqrt(x_sat**2 + y_sat**2)*sin(theta_i)) ** 2)
+                    d.append(d_i)
+
+                    phi_i = np.arctan2(y_sat, x_sat)
+                    if phi_i < 0:
+                        phi_i = 2 * np.pi + phi_i
+                    phi.append(phi_i)
+
+                ecl = np.where((d < np.ones(np.shape(d)) * R_M) & (phi > np.ones(np.shape(phi)) * (theta_s + np.pi / 2)) & (
+                      phi < np.ones(np.shape(phi)) * (theta_s + 3 * np.pi / 2)))
+                if ecl[0].size > 0:
+                    eclipse_time = self.t_array[ecl][-1] - self.t_array[ecl][0]
+                else:
+                    eclipse_time = 0
+                eclipse_times.append(eclipse_time)
+                d = []
+                phi = []
         max_eclipse = np.max(eclipse_times)
 
-        # max_eclipse = 0
         self.ecl_idx = np.where(
             (self.orbit[0] > 0) & (np.sqrt(self.orbit[1] ** 2 + self.orbit[2] ** 2) < R_M)
         )[0]
@@ -199,6 +205,9 @@ class Orbit:
         )
         print(
             "-Time-averaged angle of incidence = " + str(round(rad2deg(theta_transmit), 2)) + " deg"
+        )
+        print(
+            "-Time-averaged cosine of angle of incidence = " + str(round(theta_transmit, 2))
         )
         print(
             "-Maximum eclipse time = " + str(round(sec2hrs(max_eclipse), 2)) + " hrs"

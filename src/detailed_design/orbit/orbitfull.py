@@ -82,12 +82,14 @@ class Orbit:
             alt_transmit = float("NaN")
             alt_min = float("NaN")
             alt_max = float("NaN")
+
         # --===== Time-averaged angle of incidence  =====--
         theta_transmit = np.average(np.array(self.angles)[self.trans_idx])
         cos_transmit = np.average(cos(np.array(self.angles)[self.trans_idx]))
 
-        # --===== Eclipse time  =====--
-        eclipse_times = []
+        # --===== Eclipse =====--
+        max_eclipse_time = 0
+        max_eclipse_velocity = 0
         d = []
         phi = []
         for theta_s in range(0, 360 + res_e, res_e):
@@ -110,18 +112,24 @@ class Orbit:
                 ecl = np.where((d < np.ones(np.shape(d)) * R_M) & (phi > np.ones(np.shape(phi)) * (theta_s + np.pi / 2)) & (
                       phi < np.ones(np.shape(phi)) * (theta_s + 3 * np.pi / 2)))
                 if ecl[0].size > 0:
+                    # Max eclipse time
                     eclipse_time = self.t_array[ecl][-1] - self.t_array[ecl][0]
-                else:
-                    eclipse_time = 0
-                eclipse_times.append(eclipse_time)
+                    if eclipse_time > max_eclipse_time:
+                        max_eclipse_time = eclipse_time
+
+                    # Max eclipse velocity
+                    for j in range(0, -2, -1):
+                        r_j = np.sqrt(self.orbit[0][ecl[0][j]] ** 2 + self.orbit[1][ecl[0][j]] ** 2 + self.orbit[2][ecl[0][j]] ** 2)
+                        v_j = np.sqrt(mu_M * (2 / r_j - 1 / SMA))
+                        if v_j > max_eclipse_velocity:
+                            max_eclipse_velocity = v_j
+
                 d = []
                 phi = []
-        max_eclipse = np.max(eclipse_times)
 
         self.ecl_idx = np.where(
             (self.orbit[0] > 0) & (np.sqrt(self.orbit[1] ** 2 + self.orbit[2] ** 2) < R_M)
         )[0]
-
 
         # --===== Number of spacecraft in view =====--
         if self.trans_idx.size > 0:
@@ -130,6 +138,18 @@ class Orbit:
         else:
             sat_in_view = float("NaN")
             self.trans_idx = [0]
+
+        # --===== Minimum spacecraft spacing =====--
+        self.sats = self.orbit[:, np.round(np.linspace(0, len(self.orbit[0])-1, n_sat+1)).astype(int) % len(self.orbit[0])]
+        self.sats = self.sats[:,:-1]
+
+        if n_sat % 2 == 0:
+            idx = int(n_sat/2)
+        else:
+            idx = int(n_sat/2 - 1)
+        d_min = np.sqrt(
+            (self.sats[0][idx] - self.sats[0][idx + 1]) ** 2 + (self.sats[1][idx] - self.sats[1][idx + 1]) ** 2 + (
+                    self.sats[2][idx] - self.sats[2][idx + 1]) ** 2)
 
         # --===== Laser pointing =====--
         norm_y = np.array([0, 1, 0])
@@ -188,8 +208,11 @@ class Orbit:
         self.yaw_rate = pi/yrs2sec(0.5) + self.precession_rate
 
         # --===== Report data =====--
+        print("")
+        print("--===== Orbit datasheet =====--")
         print("-Periapsis altitude = " + str(round(SMA * (1 - ECC) - R_M, 2)))
         print("-Apoapsis altitude = " + str(round(SMA * (1 + ECC) - R_M, 2)))
+        print("-Orbital period = " + str(round(sec2hrs(self.T),2)) + " hrs")
         print("-Transmission time = " + str(round(sec2hrs(t_transmit), 2)) + " hrs")
         print("-Transmission percentage = " + str(round(percentage(t_transmit, self.T), 2)) + " %")
         print(
@@ -207,10 +230,13 @@ class Orbit:
             "-Time-averaged angle of incidence = " + str(round(rad2deg(theta_transmit), 2)) + " deg"
         )
         print(
-            "-Time-averaged cosine of angle of incidence = " + str(round(theta_transmit, 2))
+            "-Time-averaged cosine of angle of incidence = " + str(round(cos_transmit, 2))
         )
         print(
-            "-Maximum eclipse time = " + str(round(sec2hrs(max_eclipse), 2)) + " hrs"
+            "-Maximum eclipse time = " + str(round(sec2hrs(max_eclipse_time), 2)) + " hrs"
+        )
+        print(
+            "-Maximum eclipse velocity = " + str(round(max_eclipse_velocity, 2)) + " km/s"
         )
         print(
             "-Nodal precession over mission lifetime = " + str(round(rad2deg(25*yrs2sec(self.precession_rate)),2)) + " deg"
@@ -221,10 +247,12 @@ class Orbit:
         print(
             "-For "
             + str(n_sat)
-            + " equally spaced satellites in orbit, at any given instant "
-            + str(round(sat_in_view, 2))
+            + " equally spaced satellites in orbit, at least "
+            + str(round(sat_in_view))
             + " satellites can transmit at the same time."
         )
+        print("-Minimum spacecraft spacing = " + str(round(d_min,2)) + " km"
+              )
         print(
             "-Laser pointing z-angle range = " + str(round(rad2deg(np.max(self.angles_z)-np.min(self.angles_z)),2)) + " deg"
         )
@@ -412,12 +440,17 @@ class OrbitPlot(Orbit):
     def plot_rec(self):
         ...
 
-    def vary_sc(self, n_sc=80, n_pos=1000):
+    def vary_sc(self, n_sc=n_sat, n_pos=1000):
         SC_varied = np.array([[],[],[]])
         '''for i in np.linspace(0, len(self.orbit[0])-1, n_pos):
             print(i)
             np.dstack((SC_varied, self.orbit[:, np.round(np.linspace(1000, 1000+len(self.orbit[0]) - 1, n_sc)).astype(int) % len(self.orbit[0])]))'''
-        SC_varied = np.array([self.orbit[:, np.round(np.linspace(i, i+len(self.orbit[0]) - 1, n_sc)).astype(int) % len(self.orbit[0])] for i in np.linspace(0, len(self.orbit[0])-1, n_pos)])
+        #SC_varied = np.array([self.orbit[:, np.round(np.linspace(i, i+len(self.orbit[0]) - 1, n_sc + 1)).astype(int) % len(self.orbit[0])] for i in np.linspace(0, len(self.orbit[0])-1, n_pos)])
+
+        SC_varied = np.array([self.orbit[:,
+                              np.round(np.linspace(i, i + len(self.orbit[0]) - 1, n_sat + 1)).astype(int) % len(
+                                  self.orbit[0])] for i in np.linspace(0, len(self.orbit[0]) - 1, n_pos)])[:, :, :-1]
+
         '''for i in SC_varied:
             self.fig.add_trace(go.Scatter3d(
                 x = i[0],

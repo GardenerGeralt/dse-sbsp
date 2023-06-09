@@ -98,5 +98,28 @@ class BatteriesBusPower:
         """Calculate energy required to produce the batteries"""
         return self.stored_energy*1000 / self.exergy
 
-# class PowerMass:
-#     def __init__(self, ):
+class PowerMass:
+    def __init__(self, shunt_mass, cable_sp_mass, L_cables, batteries_mass, PMAD_mass):
+        """"
+        :param shunt_mass: Mass of the shunts [kg]
+        :param cable_sp_mass: Specific mass of the cables [kg/km]
+        :param L_cables: Length of cables [km]
+        :param batteries_mass: mass of the batteries [km]
+        :param PMAD_mass: mass of the power management & distribution system [kg]
+        """
+
+        self.shunt_mass = shunt_mass
+        self.cable_sp_mass = cable_sp_mass
+        self.L_cables = L_cables
+        self.batteries_mass = batteries_mass
+        self.PMAD_mass = PMAD_mass
+
+        self.harness_mass = self.calc_harness_mass()
+        self.EPS_mass = self.calc_EPS_mass()
+
+    def calc_harness_mass(self):
+        return self.cable_sp_mass * self.L_cables
+
+    def calc_EPS_mass(self):
+        return sum([self.shunt_mass, self.PMAD_mass, self.batteries_mass, self.harness_mass])
+

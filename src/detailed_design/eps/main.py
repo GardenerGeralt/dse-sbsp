@@ -22,7 +22,7 @@ def sizing_EPS():
     total_battery_mass = n_batteries * battery.m_battery
 
     "Mass of the total EPS system"
-    masses = pm(2.4, 4.4, 20, total_battery_mass, 16)
+    masses = pm(2.4, 4.4, 20, total_battery_mass, 27)
     total_EPS_mass = masses.calc_EPS_mass()
 
     return bus_power, battery_energy, battery_mass, battery_volume, n_discharges, n_batteries, n_batteries, \

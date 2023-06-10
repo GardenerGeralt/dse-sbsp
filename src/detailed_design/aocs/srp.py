@@ -12,7 +12,7 @@ k = sdbu.read()
 
 CG = [0, 0.1*k["sc height"]]  # assume centre of bus is the origin
 Phi = 1367.6  # W/m^2
-incidence = 10  # degrees
+incidence = 0  # degrees
 
 A_A = 0.5*303.7  # Array Area m^2
 A_h = np.sqrt(A_A)

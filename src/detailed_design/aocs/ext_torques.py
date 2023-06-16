@@ -26,7 +26,23 @@ for i in range(len(theta)):
     T_g.append(calc_Tg(mu, R[i], I[i], theta[i]))
 print("GG Torque around x, y, z:", T_g)
 
-T_total = np.sum([T_s, T_g], axis=0)
+################################################################### Thermal Shock
+from thermalg import T_ts
+T_ts = [0,0,T_ts]
+print("TS Torque around x, y, z:", T_ts)
+
+################################################################### Internal Torques
+
+m_payload = 72  # kg
+r_payload = 1.2  # m from CG
+acc_payload = 1.649*10**(-6)  # rad/s^2
+
+T_payload = m_payload*r_payload*acc_payload
+
+T_int = np.full(3, T_payload)
+#################################################################
+
+T_total = np.sum([T_s, T_g, T_ts, T_int], axis=0)
 T_design = np.max(T_total)*k_total
 print("Total Distrubance Torques around x, y, z", T_total)
 print()

@@ -10,7 +10,7 @@ Iz = k["sc MMOI yaw"]
 mu = 4.90487 * 10**12  # m^3/ s^2
 r_moon = 1737400  # [m]
 # Taking the minimum transmission altitude ASSUMPTION (worst case scenario)
-R = 7391000 + r_moon  # m
+#R = 7391000 + r_moon  # m
 
 R = [750000 + r_moon , 7391000 + r_moon, 7391000 + r_moon]
 
@@ -22,7 +22,8 @@ R = [750000 + r_moon , 7391000 + r_moon, 7391000 + r_moon]
         # z : laser angle
 
 #theta = [57.1, 60, 70]  # from above and graphs of Daan (07.06.23)
-theta = [60, 45, 45]
+#theta = [59, 45, 45]  # from pic of Daan (15.06.23) the worst case angles!!
+theta = [59, 45, 45]
 
 I = [Iz-Iy, Ix-Iz, Iy-Ix]
 T_g = []

@@ -29,8 +29,9 @@ class Orbit:
         self.SMA = SMA
         self.ECC = ECC
         self.INC = INC
-        rAAN = RAAN
+        self.RAAN = RAAN
         self.AOP = AOP
+
         self.T = 2 * np.pi * np.sqrt(self.SMA**3 / mu_M)
         self.t_array = np.arange(
             0, self.T * (1 + 1 / res_t), self.T / res_t
@@ -61,35 +62,38 @@ class Orbit:
 
         # --===== Transmission time  =====--
         if self.trans_idx.size > 0:
-            t_transmit = self.t_array[self.trans_idx][-1] - self.t_array[self.trans_idx][0]
+            self.t_transmit = self.t_array[self.trans_idx][-1] - self.t_array[self.trans_idx][0]
         else:
-            t_transmit = 0
+            self.t_transmit = 0
 
         # --===== Transmission altitude  =====--
         if self.trans_idx.size > 0:
-            alts = []
+            self.alts = []
             for i in range(len(self.trans_idx)):
                 alt = np.sqrt(
                     self.orbit[0][self.trans_idx[i]] ** 2
                     + self.orbit[1][self.trans_idx[i]] ** 2
                     + (self.orbit[2][self.trans_idx[i]] + R_M) ** 2
                 )
-                alts.append(alt)
-            alt_transmit = np.sum(alts) / len(self.trans_idx)
-            alt_min = np.min(alts)
-            alt_max = np.max(alts)
+                self.alts.append(alt)
+            self.alts = np.array(self.alts)
+            self.alt_transmit = np.sum(self.alts) / len(self.trans_idx)
+            self.alt_min = np.min(self.alts)
+            self.alt_max = np.max(self.alts)
         if self.trans_idx.size == 0:
-            alt_transmit = float("NaN")
-            alt_min = float("NaN")
-            alt_max = float("NaN")
+            self.alt_transmit = float("NaN")
+            self.alt_min = float("NaN")
+            self.alt_max = float("NaN")
+            self.alts = np.array([])
 
         # --===== Time-averaged angle of incidence  =====--
         theta_transmit = np.average(np.array(self.angles)[self.trans_idx])
-        cos_transmit = np.average(cos(np.array(self.angles)[self.trans_idx]))
+        self.cos_transmit = np.average(cos(np.array(self.angles)[self.trans_idx]))
 
         # --===== Eclipse =====--
-        max_eclipse_time = 0
-        max_eclipse_velocity = 0
+        self.max_eclipse_time = 0
+        self.max_eclipse_velocity = 0
+
         d = []
         phi = []
         for theta_s in range(0, 360 + res_e, res_e):
@@ -114,15 +118,16 @@ class Orbit:
                 if ecl[0].size > 0:
                     # Max eclipse time
                     eclipse_time = self.t_array[ecl][-1] - self.t_array[ecl][0]
-                    if eclipse_time > max_eclipse_time:
-                        max_eclipse_time = eclipse_time
+                    print(eclipse_time)
+                    if eclipse_time > self.max_eclipse_time:
+                        self.max_eclipse_time = eclipse_time
 
                     # Max eclipse velocity
                     for j in range(0, -2, -1):
                         r_j = np.sqrt(self.orbit[0][ecl[0][j]] ** 2 + self.orbit[1][ecl[0][j]] ** 2 + self.orbit[2][ecl[0][j]] ** 2)
                         v_j = np.sqrt(mu_M * (2 / r_j - 1 / SMA))
-                        if v_j > max_eclipse_velocity:
-                            max_eclipse_velocity = v_j
+                        if v_j > self.max_eclipse_velocity:
+                            self.max_eclipse_velocity = v_j
 
                 d = []
                 phi = []
@@ -134,9 +139,9 @@ class Orbit:
         # --===== Number of spacecraft in view =====--
         if self.trans_idx.size > 0:
             t_spacing = self.T / n_sat
-            sat_in_view = np.round((t_transmit / t_spacing),0) - 1
+            self.sat_in_view = round(np.round((self.t_transmit / t_spacing),0) - 1)
         else:
-            sat_in_view = float("NaN")
+            self.sat_in_view = float("NaN")
             self.trans_idx = [0]
 
         # --===== Minimum spacecraft spacing =====--
@@ -157,86 +162,130 @@ class Orbit:
         z_angles = []
         x_angles = []
 
-        for i in range(len(self.t_array))[self.trans_idx[0]-1:self.trans_idx[-1]+2]:
-            # Z angle
-            vec_xy = -np.array([self.orbit[0][i], self.orbit[1][i], 0])
-            vec_xy = vec_xy / np.sqrt(vec_xy.dot(vec_xy))
-            z_angle = np.arctan2((vec_xy[1]*norm_y[0]-vec_xy[0]*norm_y[1]),(vec_xy[0]*norm_y[0]+vec_xy[1]*norm_y[1]))
-            z_angles.append(z_angle)
+        if len(self.trans_idx) > 1:
+            for i in range(len(self.t_array))[self.trans_idx[0]-1:self.trans_idx[-1]+2]:
+                # Z angle
+                vec_xy = -np.array([self.orbit[0][i], self.orbit[1][i], 0])
+                vec_xy = vec_xy / np.sqrt(vec_xy.dot(vec_xy))
+                z_angle = np.arctan2((vec_xy[1]*norm_y[0]-vec_xy[0]*norm_y[1]),(vec_xy[0]*norm_y[0]+vec_xy[1]*norm_y[1]))
+                z_angles.append(z_angle)
 
-            # X angle
-            vec_yz = -np.array([0, self.orbit[1][i], self.orbit[2][i] + R_M])
-            vec_yz = vec_yz / np.sqrt(vec_yz.dot(vec_yz))
-            x_angle = np.arccos(np.dot(vec_yz, norm_y))
-            if self.orbit[2][i] <= 0:
-                x_angles.append(x_angle)
-            else:
-                x_angles.append(-x_angle)
+                # X angle
+                vec_yz = -np.array([0, self.orbit[1][i], self.orbit[2][i] + R_M])
+                vec_yz = vec_yz / np.sqrt(vec_yz.dot(vec_yz))
+                x_angle = np.arccos(np.dot(vec_yz, norm_y))
+                if self.orbit[2][i] <= 0:
+                    x_angles.append(x_angle)
+                else:
+                    x_angles.append(-x_angle)
 
-        # Pointing about Z axis
-        angles_z2 = z_angles[1:-1]
-        d_angles_z2 = np.gradient(angles_z2)
-        dd_angles_z2 = np.gradient(d_angles_z2)
-        angles_z1 = np.linspace(0, z_angles[0], self.trans_idx[0])
-        d_angles_z1 = np.gradient(angles_z1)
-        dd_angles_z1 = np.gradient(d_angles_z1)
-        angles_z3 = np.linspace(z_angles[-1], 0, len(self.t_array) - (self.trans_idx[-1] + 1))
-        d_angles_z3 = np.gradient(angles_z3)
-        dd_angles_z3 = np.gradient(d_angles_z3)
+            # Pointing about Z axis
+            angles_z2 = z_angles[1:-1]
+            d_angles_z2 = np.gradient(angles_z2)
+            dd_angles_z2 = np.gradient(d_angles_z2)
+            angles_z1 = np.linspace(0, z_angles[0], self.trans_idx[0])
+            d_angles_z1 = np.gradient(angles_z1)
+            dd_angles_z1 = np.gradient(d_angles_z1)
+            angles_z3 = np.linspace(z_angles[-1], 0, len(self.t_array) - (self.trans_idx[-1] + 1))
+            d_angles_z3 = np.gradient(angles_z3)
+            dd_angles_z3 = np.gradient(d_angles_z3)
 
-        self.angles_z = np.concatenate((angles_z1,angles_z2,angles_z3))
-        self.d_angles_z = np.concatenate((d_angles_z1,d_angles_z2,d_angles_z3))
-        self.dd_angles_z = np.concatenate((dd_angles_z1, dd_angles_z2, dd_angles_z3))
+            self.angles_z = np.concatenate((angles_z1,angles_z2,angles_z3))
+            self.d_angles_z = np.concatenate((d_angles_z1,d_angles_z2,d_angles_z3))
+            self.dd_angles_z = np.concatenate((dd_angles_z1, dd_angles_z2, dd_angles_z3))
 
-        # Pointing about X axis
-        angles_x2 = x_angles[1:-1]
-        d_angles_x2 = np.gradient(angles_x2)
-        dd_angles_x2 = np.gradient(d_angles_x2)
-        angles_x1 = x_angles[0] * np.ones(shape=np.shape(self.t_array[:self.trans_idx[0]]))
-        d_angles_x1 = np.gradient(angles_x1)
-        dd_angles_x1 = np.gradient(d_angles_x1)
-        angles_x3 = x_angles[-1] * np.ones(shape=np.shape(self.t_array[self.trans_idx[-1]:]))
-        d_angles_x3 = np.gradient(angles_x3)
-        dd_angles_x3 = np.gradient(d_angles_x3)
+            # Pointing about X axis
+            angles_x2 = x_angles[1:-1]
+            d_angles_x2 = np.gradient(angles_x2)
+            dd_angles_x2 = np.gradient(d_angles_x2)
+            angles_x1 = x_angles[0] * np.ones(shape=np.shape(self.t_array[:self.trans_idx[0]]))
+            d_angles_x1 = np.gradient(angles_x1)
+            dd_angles_x1 = np.gradient(d_angles_x1)
+            angles_x3 = x_angles[-1] * np.ones(shape=np.shape(self.t_array[self.trans_idx[-1]:]))
+            d_angles_x3 = np.gradient(angles_x3)
+            dd_angles_x3 = np.gradient(d_angles_x3)
 
-        self.angles_x = np.concatenate((angles_x1,angles_x2,angles_x3))
-        self.d_angles_x = np.concatenate((d_angles_x1,d_angles_x2,d_angles_x3))
-        self.dd_angles_x = np.concatenate((dd_angles_x1, dd_angles_x2, dd_angles_x3))
+            self.angles_x = np.concatenate((angles_x1,angles_x2,angles_x3))
+            self.d_angles_x = np.concatenate((d_angles_x1,d_angles_x2,d_angles_x3))
+            self.dd_angles_x = np.concatenate((dd_angles_x1, dd_angles_x2, dd_angles_x3))
+        else:
+            self.angles_z, self.d_angles_z, self.dd_angles_z = 0, 0, 0
+            self.angles_x, self.d_angles_x, self.dd_angles_x = 0, 0, 0
+
+        self.z_min = np.min(self.angles_z)
+        self.z_max = np.max(self.angles_z)
+        self.vel_z = np.max(np.abs(self.d_angles_z))
+        self.acc_z = np.max(np.abs(self.dd_angles_z))
+        self.x_min = np.min(self.angles_x)
+        self.x_max = np.max(self.angles_x)
+        self.vel_x = np.max(np.abs(self.d_angles_x))
+        self.acc_x = np.max(np.abs(self.dd_angles_x))
 
         # --===== Required yaw rate =====--
         self.precession_rate = -(3/2) * (R_M/(self.SMA*(1-self.ECC**2)))**2 * J2_M * (2*pi/self.T) * cos(self.INC)
         self.yaw_rate = pi/yrs2sec(0.5) + self.precession_rate
 
+        # --===== Receiver incidence diameter ratio
+        self.eta_d = (self.alts / self.alt_max) / sin(pi/2 - self.angles[self.trans_idx])
+        self.ratio = np.average(self.eta_d)
+
+        # --===== Receiver diameter =====--
+        Ms = 1.44
+        lam = 976*10**-9
+        D_exp = 2
+        theta_p = 1.26*10**-6
+        theta_pk = 0.65*10**-6
+
+        self.D_rec_range = 2*self.alts*1000*(1.52*(2*Ms*lam)/(np.pi*D_exp)*self.eta_d + theta_p + theta_pk) + D_exp
+
+        # --===== System efficiency =====--
+        if len(self.trans_idx) > 1:
+            self.trans_frac = self.t_transmit/self.T
+            self.eff = round(self.t_transmit/self.T * self.cos_transmit, 3)
+
+        else:
+            self.trans_frac = 0
+            self.eff = 0
+
+        # Random calcs
+        self.peri = round(SMA * (1 - ECC) - R_M, 2)
+        self.apo = round(SMA * (1 + ECC) - R_M, 2)
+        self.spacing = round(d_min,2)
+        self.trans_perc = round(percentage(self.t_transmit, self.T), 2)
+        self.theta_inc = round(rad2deg(theta_transmit), 2)
+        self.f_bd = round(np.max(self.eta_d),3)
+        self.D_rec = round(np.max(self.D_rec_range), 2)
+
         # --===== Report data =====--
         print("")
         print("--===== Orbit datasheet =====--")
-        print("-Periapsis altitude = " + str(round(SMA * (1 - ECC) - R_M, 2)))
-        print("-Apoapsis altitude = " + str(round(SMA * (1 + ECC) - R_M, 2)))
+        print("-Periapsis altitude = " + str(self.peri))
+        print("-Apoapsis altitude = " + str(self.apo))
         print("-Orbital period = " + str(round(sec2hrs(self.T),2)) + " hrs")
-        print("-Transmission time = " + str(round(sec2hrs(t_transmit), 2)) + " hrs")
-        print("-Transmission percentage = " + str(round(percentage(t_transmit, self.T), 2)) + " %")
+        print("-Transmission time = " + str(round(sec2hrs(self.t_transmit), 2)) + " hrs")
+        print("-Transmission percentage = " + str(self.trans_perc) + " %")
         print(
-            "-Minimum transmission altitude (from South Pole) = " + str(round(alt_min, 2)) + " km"
+            "-Minimum transmission altitude (from South Pole) = " + str(round(self.alt_min, 2)) + " km"
         )
         print(
-            "-Maximum transmission altitude (from South Pole) = " + str(round(alt_max, 2)) + " km"
+            "-Maximum transmission altitude (from South Pole) = " + str(round(self.alt_max, 2)) + " km"
         )
         print(
             "-Time-averaged transmission altitude (from South Pole) = "
-            + str(round(alt_transmit, 2))
+            + str(round(self.alt_transmit, 2))
             + " km"
         )
         print(
-            "-Time-averaged angle of incidence = " + str(round(rad2deg(theta_transmit), 2)) + " deg"
+            "-Time-averaged angle of incidence = " + str(self.theta_inc) + " deg"
         )
         print(
-            "-Time-averaged cosine of angle of incidence = " + str(round(cos_transmit, 2))
+            "-Time-averaged cosine of angle of incidence = " + str(round(self.cos_transmit, 4))
         )
         print(
-            "-Maximum eclipse time = " + str(round(sec2hrs(max_eclipse_time), 2)) + " hrs"
+            "-Maximum eclipse time = " + str(round(sec2hrs(self.max_eclipse_time), 3)) + " hrs"
         )
         print(
-            "-Maximum eclipse velocity = " + str(round(max_eclipse_velocity, 2)) + " km/s"
+            "-Maximum eclipse velocity = " + str(round(self.max_eclipse_velocity, 3)) + " km/s"
         )
         print(
             "-Nodal precession over mission lifetime = " + str(round(rad2deg(25*yrs2sec(self.precession_rate)),2)) + " deg"
@@ -248,10 +297,10 @@ class Orbit:
             "-For "
             + str(n_sat)
             + " equally spaced satellites in orbit, at least "
-            + str(round(sat_in_view))
+            + str(self.sat_in_view)
             + " satellites can transmit at the same time."
         )
-        print("-Minimum spacecraft spacing = " + str(round(d_min,2)) + " km"
+        print("-Minimum spacecraft spacing = " + str(self.spacing) + " km"
               )
         print(
             "-Laser pointing z-angle range = " + str(round(rad2deg(np.max(self.angles_z)-np.min(self.angles_z)),2)) + " deg"
@@ -259,8 +308,17 @@ class Orbit:
         print(
             "-Laser pointing x-angle range = " + str(round(rad2deg(np.max(self.angles_x) - np.min(self.angles_x)), 2)) + " deg"
         )
-        # pr
-        #print(self.orbit[:, 5000])
+        print(
+            "-Receiver incidence diameter factor = " + str(round(self.ratio,3))
+        )
+        print("-Maximum beam dilution factor = " + str(self.f_bd))
+        print("-Maximum required receiver diameter = " + str(self.D_rec) + " m")
+        print("-Efficiency = "+ str(self.eff))
+
+        # print("SMA: " + str(self.SMA) + " km")
+        # print("ECC: " + str(self.ECC))
+        # print("INC: " + str(rad2deg(self.INC)) + " deg")
+        # print("EFF: " + str(self.eff))
 
 class OrbitPlot(Orbit):
     def __init__(self, orbparams):
@@ -338,7 +396,6 @@ class OrbitPlot(Orbit):
         )
 
     def plot_orbit(self):
-
         trans_orbit = self.orbit[:, self.trans_idx]
         ecl_orbit = self.orbit[:, self.ecl_idx]
         rest_orbit = np.hstack((self.orbit[:, self.trans_idx[0]:], self.orbit[:, :self.trans_idx[0]]))
@@ -522,7 +579,17 @@ class OrbitPlot(Orbit):
         line_plot(x_data=sec2hrs(self.t_array), y_data=rad2deg(self.dd_angles_x), labels=['Pointing angular acceleration vs time'],
                   x_title=r'$\text{{{}}} t\;[hrs] $'.format('Time from periapsis '),
                   y_title=r'$\text{{{}}} \alpha_x\;[deg/s^2] $'.format('Pointing angular acceleration '))
-        
+
+    def plot_eta_d(self):
+        line_plot(x_data=sec2hrs(self.t_array[self.trans_idx]), y_data=self.eta_d, labels=['Beam dilution factor vs transmission time'],
+                  x_title=r'$\text{{{}}} t\;[hrs] $'.format('Time from periapsis '),
+                  y_title=r'$\text{{{}}} f_bd\;[-] $'.format('Beam dilution factor '))
+
+    def plot_d_rec(self):
+        line_plot(x_data=sec2hrs(self.t_array[self.trans_idx]), y_data=self.D_rec_range, labels=['Required receiver diameter vs transmission time'],
+                  x_title=r'$\text{{{}}} t\;[hrs] $'.format('Time from periapsis '),
+                  y_title=r'$\text{{{}}} D_rec\;[m] $'.format('Required receiver diameter '))
+
     def plot_all(self):
         self.plot_moon()
         self.plot_cone()

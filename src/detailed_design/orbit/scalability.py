@@ -16,10 +16,9 @@ def inc_eff(R, h, theta_array):
 
 R = 6378                        #[km]
 h = 35786                       #[km]
-transmittance = 0.825           #[-]
 power = 100                     #[kW]
-n_sat = 10000                     #[-]
-spacing = 10                    #[km]
+n_sat = 1000                     #[-]
+spacing = 50                    #[km]
 
 theta_spacing = 2*np.arcsin((spacing/2)/(R + h))
 
@@ -34,7 +33,7 @@ for n in sat_array:
     for i in range(int(n)):
         theta_array.append(-(n - 1)/2*theta_spacing + i*theta_spacing)
     theta_array = np.array(theta_array)
-    distance_i = transmittance*atmos_eff(R, h, theta_array)
+    distance_i = atmos_eff(R, h, theta_array)
     incidence_i = inc_eff(R, h, theta_array)
     total_i = distance_i * incidence_i
     distance.append(distance_i)
@@ -42,6 +41,6 @@ for n in sat_array:
     total.append(total_i)
     power_array.append(n*power*total_i)
 
-plt.plot(sat_array,power_array)
+plt.plot(sat_array,total)
 plt.show()
 

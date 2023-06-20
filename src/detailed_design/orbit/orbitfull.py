@@ -66,6 +66,13 @@ class Orbit:
         else:
             self.t_transmit = 0
 
+        # --===== Average altitude =====--
+        self.altitudes = []
+        for i in range(len(self.t_array)):
+            altitude = np.sqrt(self.orbit[0] ** 2 + self.orbit[1] ** 2 + self.orbit[2] ** 2) - R_M
+            self.altitudes.append(altitude)
+        self.alt_avg = np.average(self.altitudes)
+
         # --===== Transmission altitude  =====--
         if self.trans_idx.size > 0:
             self.alts = []
@@ -94,43 +101,42 @@ class Orbit:
         self.max_eclipse_time = 0
         self.max_eclipse_velocity = 0
 
-        d = []
-        phi = []
-        for theta_s in range(0, 360 + res_e, res_e):
-            theta_s = deg2rad(theta_s)
-            print(str(round(theta_s / (2 * np.pi) * 100, 1)) + " %")
-            for theta_i in np.linspace(-declination,declination,5):
-                for i in range(len(self.orbit[0])):
-                    x_sat, y_sat, z_sat = self.orbit[0][i], self.orbit[1][i], self.orbit[2][i]
-                    x_i = (x_sat + tan(theta_s) * y_sat) / (1 + (tan(theta_s)) ** 2)
-                    y_i = tan(theta_s) * x_i
-
-                    d_i = np.sqrt((x_sat - x_i) ** 2 + (y_sat - y_i) ** 2 + (z_sat - np.sqrt(x_sat**2 + y_sat**2)*sin(theta_i)) ** 2)
-                    d.append(d_i)
-
-                    phi_i = np.arctan2(y_sat, x_sat)
-                    if phi_i < 0:
-                        phi_i = 2 * np.pi + phi_i
-                    phi.append(phi_i)
-
-                ecl = np.where((d < np.ones(np.shape(d)) * R_M) & (phi > np.ones(np.shape(phi)) * (theta_s + np.pi / 2)) & (
-                      phi < np.ones(np.shape(phi)) * (theta_s + 3 * np.pi / 2)))
-                if ecl[0].size > 0:
-                    # Max eclipse time
-                    eclipse_time = self.t_array[ecl][-1] - self.t_array[ecl][0]
-                    print(eclipse_time)
-                    if eclipse_time > self.max_eclipse_time:
-                        self.max_eclipse_time = eclipse_time
-
-                    # Max eclipse velocity
-                    for j in range(0, -2, -1):
-                        r_j = np.sqrt(self.orbit[0][ecl[0][j]] ** 2 + self.orbit[1][ecl[0][j]] ** 2 + self.orbit[2][ecl[0][j]] ** 2)
-                        v_j = np.sqrt(mu_M * (2 / r_j - 1 / SMA))
-                        if v_j > self.max_eclipse_velocity:
-                            self.max_eclipse_velocity = v_j
-
-                d = []
-                phi = []
+        # d = []
+        # phi = []
+        # for theta_s in range(0, 360 + res_e, res_e):
+        #     theta_s = deg2rad(theta_s)
+        #     print(str(round(theta_s / (2 * np.pi) * 100, 1)) + " %")
+        #     for theta_i in np.linspace(-declination,declination,5):
+        #         for i in range(len(self.orbit[0])):
+        #             x_sat, y_sat, z_sat = self.orbit[0][i], self.orbit[1][i], self.orbit[2][i]
+        #             x_i = (x_sat + tan(theta_s) * y_sat) / (1 + (tan(theta_s)) ** 2)
+        #             y_i = tan(theta_s) * x_i
+        #
+        #             d_i = np.sqrt((x_sat - x_i) ** 2 + (y_sat - y_i) ** 2 + (z_sat - np.sqrt(x_sat**2 + y_sat**2)*sin(theta_i)) ** 2)
+        #             d.append(d_i)
+        #
+        #             phi_i = np.arctan2(y_sat, x_sat)
+        #             if phi_i < 0:
+        #                 phi_i = 2 * np.pi + phi_i
+        #             phi.append(phi_i)
+        #
+        #         ecl = np.where((d < np.ones(np.shape(d)) * R_M) & (phi > np.ones(np.shape(phi)) * (theta_s + np.pi / 2)) & (
+        #               phi < np.ones(np.shape(phi)) * (theta_s + 3 * np.pi / 2)))
+        #         if ecl[0].size > 0:
+        #             # Max eclipse time
+        #             eclipse_time = self.t_array[ecl][-1] - self.t_array[ecl][0]
+        #             if eclipse_time > self.max_eclipse_time:
+        #                 self.max_eclipse_time = eclipse_time
+        #
+        #             # Max eclipse velocity
+        #             for j in range(0, -2, -1):
+        #                 r_j = np.sqrt(self.orbit[0][ecl[0][j]] ** 2 + self.orbit[1][ecl[0][j]] ** 2 + self.orbit[2][ecl[0][j]] ** 2)
+        #                 v_j = np.sqrt(mu_M * (2 / r_j - 1 / SMA))
+        #                 if v_j > self.max_eclipse_velocity:
+        #                     self.max_eclipse_velocity = v_j
+        #
+        #         d = []
+        #         phi = []
 
         self.ecl_idx = np.where(
             (self.orbit[0] > 0) & (np.sqrt(self.orbit[1] ** 2 + self.orbit[2] ** 2) < R_M)
@@ -257,63 +263,63 @@ class Orbit:
         self.D_rec = round(np.max(self.D_rec_range), 2)
 
         # --===== Report data =====--
-        print("")
-        print("--===== Orbit datasheet =====--")
-        print("-Periapsis altitude = " + str(self.peri))
-        print("-Apoapsis altitude = " + str(self.apo))
-        print("-Orbital period = " + str(round(sec2hrs(self.T),2)) + " hrs")
-        print("-Transmission time = " + str(round(sec2hrs(self.t_transmit), 2)) + " hrs")
-        print("-Transmission percentage = " + str(self.trans_perc) + " %")
-        print(
-            "-Minimum transmission altitude (from South Pole) = " + str(round(self.alt_min, 2)) + " km"
-        )
-        print(
-            "-Maximum transmission altitude (from South Pole) = " + str(round(self.alt_max, 2)) + " km"
-        )
-        print(
-            "-Time-averaged transmission altitude (from South Pole) = "
-            + str(round(self.alt_transmit, 2))
-            + " km"
-        )
-        print(
-            "-Time-averaged angle of incidence = " + str(self.theta_inc) + " deg"
-        )
-        print(
-            "-Time-averaged cosine of angle of incidence = " + str(round(self.cos_transmit, 4))
-        )
-        print(
-            "-Maximum eclipse time = " + str(round(sec2hrs(self.max_eclipse_time), 3)) + " hrs"
-        )
-        print(
-            "-Maximum eclipse velocity = " + str(round(self.max_eclipse_velocity, 3)) + " km/s"
-        )
-        print(
-            "-Nodal precession over mission lifetime = " + str(round(rad2deg(25*yrs2sec(self.precession_rate)),2)) + " deg"
-        )
-        print(
-            f"-Yaw rate to always face the Sun = {rad2deg(self.yaw_rate):.3e} deg/s"
-        )
-        print(
-            "-For "
-            + str(n_sat)
-            + " equally spaced satellites in orbit, at least "
-            + str(self.sat_in_view)
-            + " satellites can transmit at the same time."
-        )
-        print("-Minimum spacecraft spacing = " + str(self.spacing) + " km"
-              )
-        print(
-            "-Laser pointing z-angle range = " + str(round(rad2deg(np.max(self.angles_z)-np.min(self.angles_z)),2)) + " deg"
-        )
-        print(
-            "-Laser pointing x-angle range = " + str(round(rad2deg(np.max(self.angles_x) - np.min(self.angles_x)), 2)) + " deg"
-        )
-        print(
-            "-Receiver incidence diameter factor = " + str(round(self.ratio,3))
-        )
-        print("-Maximum beam dilution factor = " + str(self.f_bd))
-        print("-Maximum required receiver diameter = " + str(self.D_rec) + " m")
-        print("-Efficiency = "+ str(self.eff))
+        # print("")
+        # print("--===== Orbit datasheet =====--")
+        # print("-Periapsis altitude = " + str(self.peri))
+        # print("-Apoapsis altitude = " + str(self.apo))
+        # print("-Orbital period = " + str(round(sec2hrs(self.T),2)) + " hrs")
+        # print("-Transmission time = " + str(round(sec2hrs(self.t_transmit), 2)) + " hrs")
+        # print("-Transmission percentage = " + str(self.trans_perc) + " %")
+        # print(
+        #     "-Minimum transmission altitude (from South Pole) = " + str(round(self.alt_min, 2)) + " km"
+        # )
+        # print(
+        #     "-Maximum transmission altitude (from South Pole) = " + str(round(self.alt_max, 2)) + " km"
+        # )
+        # print(
+        #     "-Time-averaged transmission altitude (from South Pole) = "
+        #     + str(round(self.alt_transmit, 2))
+        #     + " km"
+        # )
+        # print(
+        #     "-Time-averaged angle of incidence = " + str(self.theta_inc) + " deg"
+        # )
+        # print(
+        #     "-Time-averaged cosine of angle of incidence = " + str(round(self.cos_transmit, 4))
+        # )
+        # print(
+        #     "-Maximum eclipse time = " + str(round(sec2hrs(self.max_eclipse_time), 3)) + " hrs"
+        # )
+        # print(
+        #     "-Maximum eclipse velocity = " + str(round(self.max_eclipse_velocity, 3)) + " km/s"
+        # )
+        # print(
+        #     "-Nodal precession over mission lifetime = " + str(round(rad2deg(25*yrs2sec(self.precession_rate)),2)) + " deg"
+        # )
+        # print(
+        #     f"-Yaw rate to always face the Sun = {rad2deg(self.yaw_rate):.3e} deg/s"
+        # )
+        # print(
+        #     "-For "
+        #     + str(n_sat)
+        #     + " equally spaced satellites in orbit, at least "
+        #     + str(self.sat_in_view)
+        #     + " satellites can transmit at the same time."
+        # )
+        # print("-Minimum spacecraft spacing = " + str(self.spacing) + " km"
+        #       )
+        # print(
+        #     "-Laser pointing z-angle range = " + str(round(rad2deg(np.max(self.angles_z)-np.min(self.angles_z)),2)) + " deg"
+        # )
+        # print(
+        #     "-Laser pointing x-angle range = " + str(round(rad2deg(np.max(self.angles_x) - np.min(self.angles_x)), 2)) + " deg"
+        # )
+        # print(
+        #     "-Receiver incidence diameter factor = " + str(round(self.ratio,3))
+        # )
+        # print("-Maximum beam dilution factor = " + str(self.f_bd))
+        # print("-Maximum required receiver diameter = " + str(self.D_rec) + " m")
+        # print("-Efficiency = "+ str(self.eff))
 
         # print("SMA: " + str(self.SMA) + " km")
         # print("ECC: " + str(self.ECC))

@@ -6,7 +6,7 @@ from orbit_func import deg2rad
 R_M = 1737.4                # [km]
 mu_M = 4.9048696 * 10 ** 3  # [km^3/s^2]
 J2_M = 2.0330530 * 10 ** -4 # [-]
-declination = deg2rad(5.14) # [rad]
+declination = deg2rad(6.68) # [rad]
 lim_up = 20000              # [km]
 lim_down = 500              # [km]
 
@@ -53,35 +53,35 @@ lim_down = 500              # [km]
 #                                              np.loadtxt('GMATmin-max.csv', delimiter=',')[:, 2], \
 #                                              deg2rad(np.loadtxt('GMATmin-max.csv', delimiter=',')[:, 3])
 
-SMA, ECC, INC, AOP = [8951.272930978732, 0.7428835420016632, 2.1961381856391133, 1.4096673278382614]
-RAAN = 0
-orbpar = [SMA, ECC, INC, RAAN, AOP]
+# SMA, ECC, INC, AOP = [8951.272930978732, 0.7428835420016632, 0.94545446795, 1.4096673278382614]
+# RAAN = 0
+# orbpar = [SMA, ECC, INC, RAAN, AOP]
 
 #################  Oscillations min-max  #######################
-# path = r'{}'.format("oscillation.csv")
-# df = pd.read_csv(path,delim_whitespace=True,header=None)
-# SMA_range = np.array(df[:][1][1:])
-# ECC_range = np.array(df[:][2][1:])
-# INC_range = deg2rad(np.array(df[:][3][1:]))
-# AOP_range = deg2rad(np.array(df[:][5][1:]))
-#
-# for i in range(len(SMA_range)):
-#     SMA_range[i] = float(SMA_range[i])
-#     ECC_range[i] = float(ECC_range[i])
-#     INC_range[i] = float(INC_range[i])
-#     AOP_range[i] = float(AOP_range[i])
+path = r'{}'.format("oscillation.csv")
+df = pd.read_csv(path,delim_whitespace=True,header=None)
+SMA_range = np.array(df[:][1][1:])
+ECC_range = np.array(df[:][2][1:])
+INC_range = deg2rad(np.array(df[:][3][1:]))
+AOP_range = deg2rad(np.array(df[:][5][1:]))
+
+for i in range(len(SMA_range)):
+    SMA_range[i] = float(SMA_range[i])
+    ECC_range[i] = float(ECC_range[i])
+    INC_range[i] = float(np.pi - INC_range[i])
+    AOP_range[i] = float(AOP_range[i])
 
 ###############################################################
 
 # Satellite params
-n_sat = 80
+n_sat = 75
 
 # Transmitter-receiver params
 trans_angle = deg2rad(68.2)
 pointing_acc = 6.5 * 10**-6     #[rad]
 
 # Resolution
-res_t = 10000
+res_t = 500
 #res_e = 5
 res_e = 36
 #res_e = 1

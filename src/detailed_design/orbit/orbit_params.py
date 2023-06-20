@@ -74,7 +74,7 @@ for i in range(len(SMA_range)):
 ###############################################################
 
 # Satellite params
-n_sat = 75
+n_sat = 66
 
 # Transmitter-receiver params
 trans_angle = deg2rad(68.2)

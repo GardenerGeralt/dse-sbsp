@@ -25,23 +25,23 @@ def calc_wavelength(freq):
     return LIGHT_SPEED / freq
 
 
-def calc_circ_area(diameter):
+def calc_circ_area(radius):
     """
     Args:
         diameter: diameter of circle [m]
     Returns:
         area: area of circle [m2]
     """
-    return np.pi * (diameter / 2) ** 2
+    return np.pi * (radius) ** 2
 
 
-def gaussian(range, beam):
+'''def gaussian(range, beam):
     x = np.linspace(-range, range, 100)
     y = np.linspace(-range, range, 100)
     x, y = np.meshgrid(x, y)
     r = np.sqrt(x ** 2 + y ** 2)
     # z = ((1. / np.sqrt(2 * np.pi)) * np.exp(-.5 * r ** 2/(0.5*self.module_beam_width)**2))
-    z = 2 * power_tx / (np.pi * self.module_beam_width ** 2) * np.exp(-2 * r ** 2 / self.module_beam_width ** 2)
+    z = 2 * power_tx / (np.pi * self.module_beam_width ** 2) * np.exp(-2 * r ** 2 / self.module_beam_width ** 2)'''
 
 def plotly_plot_bivariate_normal_pdf(x, y, z, name=""):
     fig = go.Figure(data=[go.Surface(x=y, y=x, z=z)])
@@ -62,7 +62,7 @@ def plotly_plot_bivariate_normal_pdf(x, y, z, name=""):
 
 class Laser:
     def __init__(
-        self, freq, eff_tx, beam_div_angle, min_beam_width, m_squared, spec_mass
+        self, wavelength, min_beam_radius, m_squared, spec_mass, eff_tx, power_tx
     ):
         """
         :param freq: frequency of laser [Hz]
@@ -73,20 +73,19 @@ class Laser:
         :param spec_mass: specific mass of laser [kg/W]
         """
         #  Frequency and wavelength
-        self.freq = freq
-        self.wavelength = calc_wavelength(freq)
+        self.wavelength = wavelength
         #  Efficiencies
         self.eff_tx = eff_tx
         # self.eff_rx = eff_rx
         # Beam parameters
-        self.min_beam_width = min_beam_width
-        self.min_beam_area = calc_circ_area(min_beam_width)
+        self.min_beam_radius = min_beam_radius
+        self.min_beam_area = calc_circ_area(min_beam_radius)
         self.m_squared = m_squared
-        self.beam_div_angle = beam_div_angle
+        self.beam_div_half_angle = self.calc_beam_div_half_angle()
         #  Mass
         self.spec_mass = spec_mass
-        #  Calculated parameters
-        self.beam_div_angle_c = self.calc_beam_div_angle()
+        self.power_tx = power_tx
+        self.
 
     def __str__(
         self,
@@ -94,60 +93,33 @@ class Laser:
         return (
             f"\nLaser:\n"
             f"------------------\n"
-            f"       Laser frequency : {self.freq:.4e} [Hz],\n"
             f"      Laser wavelength : {self.wavelength:.4e} [m],\n"
             f"Transmitter efficiency : {self.eff_tx} [-],\n"
-            f"    Minimum beam width : {self.min_beam_width:.4e} [m],\n"
+            f"   Minimum beam radius : {self.min_beam_radius:.4e} [m],\n"
             f"     Minimum beam area : {self.min_beam_area:.4e} [m2],\n"
             f"             M squared : {self.m_squared} [-],\n"
-            f" Given beam divergence angle : {self.beam_div_angle:.4e} [rad]\n"
-            f" Calculated beam divergence angle : {self.beam_div_angle_c:.4e} [rad], "
+            f" Beam divergence angle (HALF): {self.beam_div_half_angle:.4e} [rad]\n"
         )
 
-    def calc_beam_div_angle(self):
+    def calc_beam_div_half_angle(self):
         """
-        Returns: full divergence angle theta (NOT HALF)
+        Returns: HALF divergence angle [rad]
         """
-        return 2 * self.m_squared * self.wavelength / (np.pi * self.min_beam_width)
+        return self.m_squared * self.wavelength / (np.pi * self.min_beam_radius)
 
-    def calc_beam_width(self, distance):
+    def calc_beam_radius(self, distance):
         """
         Args:
             distance: distance from transmitter [m]
         Returns:
-            w(distance): beam width at certain distance [m]
+            w(distance): beam radius at certain distance [m]
         """
-        # according to https://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=7885601:
-        return self.min_beam_width * np.sqrt(
-            1
-            + (
-                self.m_squared
-                * self.wavelength
-                * distance
-                / (np.pi * self.min_beam_width**2)
-            )
-            ** 2
-        )
+        return self.min_beam_radius+np.tan(self.beam_div_half_angle)*distance
 
-    def flux_density(self, power_tx, distance):
-        """
-        Args:
-            power_tx: power at transmitter [W]
-            distance: distance from transmitter [m]
-        Returns:
-            S(distance): flux density at certain distance, averaged over the entire beam? [W/m2]
-        """
-        return power_tx / calc_circ_area(self.calc_beam_width(distance))
-
-    def calc_power_tx(self, power_rx, distance):
-        """
-        Args:
-            power_rx: power at receiver [W]
-            distance: distance from transmitter [m]
-        Returns:
-            power_tx: power at transmitter [W]
-        """
-        return power_rx / (self.eff_rx * self.eff_tx)
+    def calc_beam_radius_95(self, distance):
+        return 1.224*self.calc_beam_radius(distance)
+    def calc_beam_radius_99(self, distance):
+        return 1.52*self.calc_beam_radius(distance)
 
     def calc_mass_tx(self, power_tx):
         """
@@ -159,15 +131,32 @@ class Laser:
         return power_tx * self.spec_mass
 
 
+class LaserOptics(Laser):
+    def __init__(self, params_laser, distance, spot_radius):
+        super().__init__(*params_laser)
+        self.distance = distance
+        self.spot_radius = spot_radius
+
+    def calc_beam_div_half_angle(self):
+        """
+        Overwrites Laser.calc_beam_div_half_angle()
+        Returns:
+
+        """
+        return self.spot_radius/self.distance
+
+    def calc_optics_radius(self):
+        return self.M2*self.wavelength/(np.pi*)
+
+
 class LaserArray:
     def __init__(self, n_modules, module_spacing):
         self.n_modules = n_modules
         self.module_spacing = module_spacing
 
         # From laser class
-        self.module = Laser(3e8 / 976e-9, 0.43, 0.33, 5.4e-3, 4, 1)
-        self.module_power = 300 # W
-        self.module_beam_width = self.module.calc_beam_width(18000)
+        self.module = Laser(976e-9, 1, 2, 1, 0.43, 300)
+        self.module_beam_radius = self.module.calc_beam_radius()
 
     def __str__(self):
         return (
@@ -255,20 +244,20 @@ class LaserArray:
     def plot_flat_array(self, array):
         fig = go.Figure()
 
-        # for x, y in zip(array[0].flatten(), array[1].flatten()):
-        #     if not np.isnan(x) and not np.isnan(y):
-        #         fig.add_shape(
-        #             type="circle",
-        #             xref="x",
-        #             yref="y",
-        #             fillcolor="PaleTurquoise",
-        #             x0=x - self.module_beam_width / 2,
-        #             y0=y - self.module_beam_width / 2 ,
-        #             x1=x + self.module_beam_width / 2,
-        #             y1=y + self.module_beam_width / 2,
-        #             line_color="LightSeaGreen",
-        #             opacity=0.05,
-        #         )
+        for x, y in zip(array[0].flatten(), array[1].flatten()):
+            if not np.isnan(x) and not np.isnan(y):
+                fig.add_shape(
+                    type="circle",
+                    xref="x",
+                    yref="y",
+                    fillcolor="PaleTurquoise",
+                    x0=x - self.module_beam_width / 2,
+                    y0=y - self.module_beam_width / 2 ,
+                    x1=x + self.module_beam_width / 2,
+                    y1=y + self.module_beam_width / 2,
+                    line_color="LightSeaGreen",
+                    opacity=0.05,
+                )
         fig.add_trace(go.Scatter(
             x=array[0].flatten(),
             y=array[1].flatten(),
@@ -320,6 +309,17 @@ class LaserArray:
         fig.show()
         return x,y,z
 
-    def calc_pointing_accuracy(self, distance, size_rx):
-        return np.arctan(0.5*(size_rx-self.calc_total_beam_diameter())/distance)
+    def calc_pointing_accuracy(self, distance, size_rx, jitter):
+        return np.arctan(0.5*(size_rx-self.calc_total_beam_diameter()*1.5)/distance-jitter)
         # return np.arctan(0.5 * (size_rx - 5) / distance)
+
+    def calc_jitter(self):
+        size_rx = 60 # m
+        distance = 18e6 # m
+        theta_point = self.calc_pointing_accuracy()
+    def calc_size_rx(self, distance, pointing_accuracy, jitter):
+        return 2*(distance*(pointing_accuracy+jitter)+
+                         self.module_beam_width*1.5/2)
+    def calc_n_modules(self, P_req=1e6, e_optics=0.99, e_fill=0.99, e_inc=0.74, e_rx=0.33, e_rx_deg=0.995**25, e_tx_eol=0.8):
+        n_las = P_req/(self.module_power*e_optics*e_fill*e_inc*e_rx*e_rx_deg*e_tx_eol)
+        return n_las/65

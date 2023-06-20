@@ -147,6 +147,11 @@ def four_plots(x_data, y_data, labels=(None, None, None, None), x_titles='x axis
     fig.update_yaxes(row=2, col=2, title_text=y_titles[3])
 
     fig.update_layout(template="ggplot2", showlegend=True)
+    font = dict(
+        family="Courier New, monospace",
+        size=18,
+        color="RebeccaPurple"
+    )
     fig.show()
 
 

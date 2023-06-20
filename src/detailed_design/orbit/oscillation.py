@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 from src.plotting.plots import line_plot
 from scipy.signal import butter,filtfilt
+from graphs import six_plots, four_plots
 
 def butter_lowpass_filter(data, cutoff, fs, order):
     normal_cutoff = cutoff / nyq
@@ -49,7 +50,7 @@ for name in names:
     AOP_avg = np.average(AOP) * np.ones(shape=np.shape(AOP))
     #SMA_filtered = butter_lowpass_filter(SMA, cutoff, fs, order)
 
-    line_plot(x_data=[(DAYS / 365.25), (DAYS / 365.25)], y_data=[SMA, SMA_avg], labels=['Oscillation', 'Average'],
+    '''line_plot(x_data=[(DAYS / 365.25), (DAYS / 365.25)], y_data=[SMA, SMA_avg], labels=['Oscillation', 'Average'],
               x_title=r'$\text{{{}}} t\;[years] $'.format('Time (from 01-01-2030) '),
               y_title=r'$\text{{{}}} a\;[km] $'.format('Semi-major axis '))
     line_plot(x_data=[(DAYS / 365.25), (DAYS / 365.25)], y_data=[ECC, ECC_avg], labels=['Oscillation', 'Average'],
@@ -60,4 +61,17 @@ for name in names:
               y_title=r'$\text{{{}}} i\;[deg] $'.format('Inclination '))
     line_plot(x_data=[(DAYS / 365.25), (DAYS / 365.25)], y_data=[AOP, AOP_avg], labels=['Oscillation', 'Average'],
               x_title=r'$\text{{{}}} t\;[years] $'.format('Time (from 01-01-2030) '),
-              y_title=r'$\text{{{}}} \omega\;[deg] $'.format('Argument of periapsis '))
+              y_title=r'$\text{{{}}} \omega\;[deg] $'.format('Argument of periapsis '))'''
+    x_data = np.array([DAYS / 365.25, DAYS / 365.25, DAYS / 365.25, DAYS / 365.25])
+    y_data = np.array([[SMA, SMA_avg], [ECC, ECC_avg], [INC, INC_avg], [AOP, AOP_avg]])
+    x_titles = [r'$\text{{{}}} t\;[years] $'.format('Time (from 01-01-2030) '), r'$\text{{{}}} t\;[years] $'.format('Time (from 01-01-2030) '),r'$\text{{{}}} t\;[years] $'.format('Time (from 01-01-2030) '),r'$\text{{{}}} t\;[years] $'.format('Time (from 01-01-2030) ')]
+    y_titles = [r'$\text{{{}}} a\;[km] $'.format('Semi-major axis '), r'$\text{{{}}} e\;[-] $'.format('Eccentricity '), r'$\text{{{}}} i\;[deg] $'.format('Inclination '), r'$\text{{{}}} \omega\;[deg] $'.format('Argument of periapsis ')]
+    print(y_data[0][0])
+    four_plots(x_data, y_data, x_titles=x_titles, y_titles=y_titles, labels=['Oscillation', 'Oscillation', 'Oscillation', 'Oscillation'])
+    x_data_5y = x_data[:, 0:int(365.25*5)]
+    y_data_5y = y_data[:, :, 0:int(365.25*5)]
+    print(x_data_5y)
+    four_plots(x_data_5y, y_data_5y, x_titles=x_titles, y_titles=y_titles, labels=['Oscillation', 'Oscillation', 'Oscillation', 'Oscillation'])
+    line_plot(x_data=[(DAYS[0:366] / 365.25), (DAYS[0:366] / 365.25)], y_data=[SMA[0:366], SMA_avg[0:366]], labels=['Oscillation', 'Average'],
+              x_title=r'$\text{{{}}} t\;[years] $'.format('Time (from 01-01-2030) '),
+              y_title=r'$\text{{{}}} a\;[km] $'.format('Semi-major axis '))

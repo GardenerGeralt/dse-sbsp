@@ -92,20 +92,21 @@ class BatteriesBusPower:
 
     def calc_n_batteries(self):
         """Calculate number of batteries based on total battery mass and mass of one battery"""
-        return self.battery_mass / self.m_battery
+        return self.battery_mass / self.m_battery + 2
 
     def calc_battery_exergy(self):
         """Calculate energy required to produce the batteries"""
         return self.stored_energy*1000 / self.exergy
 
 class PowerMass:
-    def __init__(self, shunt_mass, cable_sp_mass, L_cables, batteries_mass, PMAD_mass):
+    def __init__(self, shunt_mass, cable_sp_mass, L_cables, batteries_mass, PMAD_mass, dry_mass, harness_frac, n_conv, m_conv):
         """"
         :param shunt_mass: Mass of the shunts [kg]
         :param cable_sp_mass: Specific mass of the cables [kg/km]
         :param L_cables: Length of cables [km]
         :param batteries_mass: mass of the batteries [km]
         :param PMAD_mass: mass of the power management & distribution system [kg]
+        
         """
 
         self.shunt_mass = shunt_mass
@@ -113,13 +114,25 @@ class PowerMass:
         self.L_cables = L_cables
         self.batteries_mass = batteries_mass
         self.PMAD_mass = PMAD_mass
+        self.dry_mass = dry_mass
+        self.harness_frac = harness_frac
+        self.n_conv = n_conv
+        self.m_conv = m_conv
 
         self.harness_mass = self.calc_harness_mass()
+        self.harness_mass_v2 = self.calc_harness_mass_v2()
+        self.conv_mass = self.calc_conv_mass()
         self.EPS_mass = self.calc_EPS_mass()
 
     def calc_harness_mass(self):
         return self.cable_sp_mass * self.L_cables
 
+    def calc_harness_mass_v2(self):
+        return self.harness_frac * self.dry_mass
+
+    def calc_conv_mass(self):
+        return self.n_conv * self.m_conv
+
     def calc_EPS_mass(self):
-        return sum([self.shunt_mass, self.PMAD_mass, self.batteries_mass, self.harness_mass])
+        return sum([self.shunt_mass, self.PMAD_mass, self.batteries_mass, self.harness_mass_v2, self.conv_mass])
 

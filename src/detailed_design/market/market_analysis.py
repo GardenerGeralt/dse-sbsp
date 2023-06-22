@@ -53,7 +53,7 @@ class LCOE:
         self.maintenance_cost = np.array(maintenance_cost)
         self.energy_prod = np.array(energy_prod)
         self.r = r  # * np.ones((1,25))
-        self.t = np.arange(1, t)
+        self.t = np.arange(0, t)
         self.lcoe = self.calc_lcoe()
 
     def calc_lcoe(self):

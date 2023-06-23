@@ -9,33 +9,25 @@ J2_M = 2.0330530 * 10 ** -4 # [-]
 declination = deg2rad(6.68) # [rad]
 lim_up = 20000              # [km]
 lim_down = 500              # [km]
+lim_trans = 14150           # [km]
 
 # Orbital params
-# SMA = 10529.23951  # [km]
-# SMA = 9470
-# ECC = 0.763762616  # [-]
-# INC = deg2rad(60)  # [rad]
-# SMA = 2100
-# ECC = 0.153
-# INC = deg2rad(86.46)
-# SMA = 2077.4
-# ECC = 0.062086903
-# INC = 1.3105677353225422
-
-### 14150 km trans
+#Input
 # SMA = 8934.369696969698
 # ECC = 0.7437844582105605
-# INC = 2.115021720825856
+# INC = np.pi - 2.115021720825856
 # AOP = deg2rad(90)
-### Average (14150 km trans)
+# RAAN = deg2rad(0)  # [rad]
+# orbpar = [SMA, ECC, INC, RAAN, AOP]
+
+#Average
 # SMA = 8930.43325472
 # ECC = 0.7084912
-# INC = deg2rad(123.25662458)
+# INC = np.pi - deg2rad(123.25662458)
 # AOP = deg2rad(90.0150212)
-#
 # RAAN = deg2rad(0)  # [rad]
-#
 # orbpar = [SMA, ECC, INC, RAAN, AOP]
+
 
 #Orbit optimisation LLFO
 # SMA_range = np.linspace(R_M + lim_down, R_M + lim_up, 100)
@@ -52,7 +44,7 @@ lim_down = 500              # [km]
 #                                              deg2rad(np.loadtxt('GMATmin-max.csv', delimiter=',')[:, 1]), \
 #                                              np.loadtxt('GMATmin-max.csv', delimiter=',')[:, 2], \
 #                                              deg2rad(np.loadtxt('GMATmin-max.csv', delimiter=',')[:, 3])
-
+#
 # SMA, ECC, INC, AOP = [8951.272930978732, 0.7428835420016632, 0.94545446795, 1.4096673278382614]
 # RAAN = 0
 # orbpar = [SMA, ECC, INC, RAAN, AOP]
@@ -70,11 +62,13 @@ for i in range(len(SMA_range)):
     ECC_range[i] = float(ECC_range[i])
     INC_range[i] = float(np.pi - INC_range[i])
     AOP_range[i] = float(AOP_range[i])
+# RAAN = 0
+# orbpar = [SMA_range[2922], ECC_range[2922], INC_range[2922], RAAN, AOP_range[2922]]
 
 ###############################################################
 
 # Satellite params
-n_sat = 66
+n_sat = 154
 
 # Transmitter-receiver params
 trans_angle = deg2rad(68.2)

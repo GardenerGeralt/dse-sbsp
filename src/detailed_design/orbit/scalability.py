@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from orbit_func import *
 
 def atmos_eff(R, h, theta_array):
     d_array = np.sqrt(R**2 + (h + R)**2 - 2*R*(h + R)*np.cos(theta_array))
@@ -10,7 +11,8 @@ def atmos_eff(R, h, theta_array):
 def inc_eff(R, h, theta_array):
     length_array = np.sqrt(R**2 + (h + R)**2 - 2*R*(h + R)*np.cos(np.abs(theta_array)))
     phi_array = np.arcsin(np.sin(np.abs(theta_array))*(h + R) / length_array)
-    eff_array = np.cos(phi_array)
+    eff_array = 1 * np.ones(shape=np.shape(phi_array)) - np.average(5.6 * 10 ** -4 * rad2deg(phi_array) + 0.052 * np.ones(
+            shape=np.shape(phi_array)))
     eff = np.average(eff_array)
     return eff
 
@@ -41,6 +43,9 @@ for n in sat_array:
     total.append(total_i)
     power_array.append(n*power*total_i)
 
-plt.plot(sat_array,total)
+plt.plot(sat_array,distance,label="Atmospheric scaling")
+plt.plot(sat_array,incidence,label="Reflectance scaling")
+plt.plot(sat_array,total,label="Total efficiency")
+plt.legend()
 plt.show()
 

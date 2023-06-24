@@ -17,7 +17,7 @@ DAYS = np.array(df[:][0][1:])
 # [orbplot.f_bd, orbplot.D_rec, orbplot.max_eclipse_time, orbplot.max_eclipse_velocity]
 
 # Load data
-data = pickle.load(open('orbit_data_5.p', 'rb'))
+data = pickle.load(open('orbit_data_6.p', 'rb'))
 PARAM1 = np.array(Extract(data,1,6))
 PARAM2 = np.array(Extract(data,1,10))
 PARAM3 = 100*np.array(Extract(data,1,0))

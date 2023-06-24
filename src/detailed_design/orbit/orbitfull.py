@@ -18,6 +18,8 @@ import plotly.graph_objects as go
 from orbit_params import *
 from orbit_func import *
 from src.plotting.plots import line_plot
+from PIL import Image
+img = Image.open("background.jpg")
 
 #import plotly.io as io
 
@@ -139,7 +141,7 @@ class Orbit:
         #         phi = []
 
         self.ecl_idx = np.where(
-            (self.orbit[0] > 0) & (np.sqrt(self.orbit[1] ** 2 + self.orbit[2] ** 2) < R_M)
+            (self.orbit[0] < 0) & (np.sqrt(self.orbit[1] ** 2 + self.orbit[2] ** 2) < R_M)
         )[0]
 
         # --===== Number of spacecraft in view =====--
@@ -355,15 +357,27 @@ class OrbitPlot(Orbit):
             scene=dict(
                 xaxis=dict(
                     nticks=4,
-                    range=[-20000, 20000],
+                    range=[-150000, 150000],
+                    backgroundcolor='rgb(9,9,35)',
+                    gridcolor='rgb(46,44,117)',
+                    gridwidth=10,
+                    visible=False
                 ),
                 yaxis=dict(
                     nticks=4,
-                    range=[-20000, 20000],
+                    range=[-150000, 150000],
+                    backgroundcolor='rgb(9,9,35)',
+                    gridcolor='rgb(46,44,117)',
+                    gridwidth=10,
+                    visible=False
                 ),
                 zaxis=dict(
                     nticks=4,
-                    range=[-25000, 15000],
+                    range=[-150000, 150000],
+                    backgroundcolor='rgb(9,9,35)',
+                    gridcolor='rgb(46,44,117)',
+                    gridwidth=10,
+                    visible = False
                 ),
             ),
             width=1500,
@@ -375,7 +389,25 @@ class OrbitPlot(Orbit):
                               method="animate",
                               args=[None])])],
         )
-        self.fig.update_layout(transition={'duration': 0.2})
+        self.fig.update_layout(transition={'duration': 0.01})
+
+        # Add images
+
+        self.fig.add_layout_image(
+            dict(
+                source=img,
+                xref="x",
+                yref="y",
+                x=-1,
+                y=4,
+                sizex=7,
+                sizey=5,
+                sizing="stretch",
+                opacity=1,
+                layer="below")
+        )
+        self.fig.update_xaxes(showgrid=False,zeroline=False)
+        self.fig.update_yaxes(showgrid=False,zeroline=False)
 
     def plot_moon(self):
         u_m, v_m = np.mgrid[0 : 2 * pi : 200j, 0:pi:200j]
@@ -383,12 +415,12 @@ class OrbitPlot(Orbit):
         y_m = R_M * sin(u_m) * sin(v_m)
         z_m = R_M * cos(v_m)
         self.fig.add_trace(
-            go.Surface(x=x_m, y=y_m, z=z_m, colorscale=[[0, "white"], [1, "white"]], opacity=1)
+            go.Surface(x=x_m, y=y_m, z=z_m, colorscale=[[0, 'rgb(206, 206, 206)'], [1, 'rgb(206, 206, 206)']], opacity=1)
         )
         return x_m, y_m, z_m
 
     def plot_cone(self, half_angle=70):
-        h = np.linspace(0, 20000, 100)
+        h = np.linspace(0, 100000, 100)
         th = np.linspace(0, 2 * pi, 100)
         H, TH = np.meshgrid(h, th)
         x_c = H * tan(deg2rad(half_angle)) * sin(TH)
@@ -396,29 +428,13 @@ class OrbitPlot(Orbit):
         z_c = -H - R_M
 
         self.fig.add_trace(
-            go.Surface(x=x_c, y=y_c, z=z_c, colorscale=[[0, "blue"], [1, "blue"]], opacity=0.1)
+            go.Surface(x=x_c, y=y_c, z=z_c, colorscale=[[0, 'rgb(0,219,25)'], [1, 'rgb(0,219,25)']], opacity=0.15)
         )
 
     def plot_umbra(self):
-        z_s, y_s, x_s = cylinder(R_M, 20000)
+        z_s, y_s, x_s = cylinder(R_M, -400000)
         self.fig.add_trace(
-            go.Surface(x=x_s, y=y_s, z=z_s, colorscale=[[0, "grey"], [1, "grey"]], opacity=0.5)
-        )
-
-    def plot_sc(self, n=80):
-        self.SC = self.orbit[:, np.round(np.linspace(0, len(self.orbit[0]) - 1, n)).astype(int)]
-        self.fig.add_trace(
-            go.Scatter3d(
-                x=self.SC[0],
-                y=self.SC[1],
-                z=self.SC[2],
-                connectgaps=False,
-                mode="markers",
-                marker=dict(
-                    size=3,
-                    color="black",
-                ),
-            )
+            go.Surface(x=x_s, y=y_s, z=z_s, colorscale=[[0, 'rgb(64,64,64)'], [1, 'rgb(64,64,64)']], opacity=0.5)
         )
 
     def plot_orbit(self):
@@ -431,7 +447,7 @@ class OrbitPlot(Orbit):
         # rest_orbit2 = self.orbit[:, self.ecl_idx[-1]: self.trans_idx[0]]
         #rest_orbit2 = rest_orbit1[:self.ecl_idx[0]]
 
-        '''if self.trans_idx[0] < self.ecl_idx[0]:
+        if self.trans_idx[0] < self.ecl_idx[0]:
             orb_x1 = self.orbit[0][: self.trans_idx[0]]
             orb_x2 = self.orbit[0][self.trans_idx[-1]: self.ecl_idx[0]]
             orb_x3 = self.orbit[0][self.ecl_idx[-1]:]
@@ -454,71 +470,119 @@ class OrbitPlot(Orbit):
 
             orb_z1 = self.orbit[2][: self.ecl_idx[0]]
             orb_z2 = self.orbit[2][self.ecl_idx[-1]: self.trans_idx[0]]
-            orb_z3 = self.orbit[2][self.trans_idx[-1]:]'''
+            orb_z3 = self.orbit[2][self.trans_idx[-1]:]
 
-        self.fig.add_trace(
-            go.Scatter3d(
-                x=trans_orbit[0],
-                y=trans_orbit[1],
-                z=trans_orbit[2],  # Plot transmission part of orbit
-                connectgaps=True,
-                line=dict(color="green", width=1),
-                marker=dict(
-                    size=1,
-                    color="green",
-                ),
-            ),
-        )
-        self.fig.add_trace(
-            go.Scatter3d(
-                x=ecl_orbit[0],
-                y=ecl_orbit[1],
-                z=ecl_orbit[2],  # Plot eclipse orbit
-                connectgaps=True,
-                line=dict(color="black", width=1),
-                marker=dict(
-                    size=1,
-                    color="black",
-                ),
-            ),
-        )
-        self.fig.add_trace(
-            go.Scatter3d(
-                x=rest_orbit[0],
-                y=rest_orbit[1],
-                z=rest_orbit[2],  # Plot "normal" orbit
-                connectgaps=True,
-                line=dict(color="red", width=1),
-                marker=dict(
-                    size=1,
-                    color="red",
-                ),
-            ),
-        )
-        # print(len(self.fig.data))
         # self.fig.add_trace(
         #     go.Scatter3d(
-        #         x=rest_orbit2[0],
-        #         y=rest_orbit2[1],
-        #         z=rest_orbit2[2],  # Plot transmission orbit
+        #         x=trans_orbit[0],
+        #         y=trans_orbit[1],
+        #         z=trans_orbit[2],  # Plot transmission part of orbit
         #         connectgaps=True,
+        #         line=dict(color='rgb(76,255,0)', width=1),
         #         marker=dict(
-        #             size=1,
-        #             color="blue",
+        #             size=2,
+        #             color='rgb(76,255,0)',
+        #             # color='rgb(58,137,37)',
         #         ),
         #     ),
         # )
         # self.fig.add_trace(
         #     go.Scatter3d(
-        #         x=self.orbit[0][self.ecl_idx],
-        #         y=self.orbit[1][self.ecl_idx],
-        #         z=self.orbit[2][self.ecl_idx],  # Plot eclipse orbit
+        #         x=ecl_orbit[0],
+        #         y=ecl_orbit[1],
+        #         z=ecl_orbit[2],  # Plot eclipse orbit
+        #         connectgaps=True,
+        #         line=dict(color="black", width=1),
         #         marker=dict(
-        #             size=1,
+        #             size=2,
         #             color="black",
         #         ),
         #     ),
         # )
+        # self.fig.add_trace(
+        #     go.Scatter3d(
+        #         x=rest_orbit[0],
+        #         y=rest_orbit[1],
+        #         z=rest_orbit[2],  # Plot "normal" orbit
+        #         connectgaps=True,
+        #         line=dict(color="red", width=1),
+        #         marker=dict(
+        #             size=2,
+        #             color="red",
+        #         ),
+        #     ),
+        # )
+        self.fig.add_trace(
+            go.Scatter3d(x=orb_x1, y=orb_y1, z=orb_z1,  # Plot Orbit part 1
+                         connectgaps=True,
+                         line=dict(color='red', width=1),
+                         marker=dict(
+                             size=2,
+                             color='red',
+                             # colorscale='Viridis',
+                         ),
+                         ),
+        )
+        self.fig.add_trace(
+            go.Scatter3d(x=orb_x2, y=orb_y2, z=orb_z2,  # Plot Orbit part 2
+                         connectgaps=True,
+                         line=dict(color='red', width=1),
+                         marker=dict(
+                             size=2,
+                             color='red',
+                             # colorscale='Viridis',
+                         ),
+                         ),
+        )
+        self.fig.add_trace(
+            go.Scatter3d(x=orb_x3, y=orb_y3, z=orb_z3,  # Plot Orbit part 3
+                         connectgaps=True,
+                         line=dict(color='red', width=1),
+                         marker=dict(
+                             size=2,
+                             color='red',
+                             # colorscale='Viridis',
+                         ),
+                         ),
+        )
+        self.fig.add_trace(
+            go.Scatter3d(x=self.orbit[0][self.trans_idx], y=self.orbit[1][self.trans_idx], z=self.orbit[2][self.trans_idx],  # Plot transmission orbit
+                         connectgaps=True,
+                         line=dict(color='rgb(76,255,0)', width=1),
+                         marker=dict(
+                             size=2,
+                             color='rgb(76,255,0)',
+                         ),
+                         ),
+        )
+        self.fig.add_trace(
+            go.Scatter3d(x=self.orbit[0][self.ecl_idx], y=self.orbit[1][self.ecl_idx], z=self.orbit[2][self.ecl_idx],  # Plot eclipse orbit
+                         connectgaps=True,
+                         line=dict(color='black', width=1),
+                         marker=dict(
+                             size=2,
+                             color='black',
+                             # colorscale='Viridis',
+                         ),
+                         ),
+        )
+
+    def plot_sc(self, n=n_sat):
+        self.SC = self.orbit[:, np.round(np.linspace(0, len(self.orbit[0]) - 1, n)).astype(int)]
+        self.fig.add_trace(
+            go.Scatter3d(
+                x=self.SC[0],
+                y=self.SC[1],
+                z=self.SC[2],
+                connectgaps=False,
+                mode="markers",
+                marker=dict(
+                    size=2,
+                    color="white",
+                    symbol='square',
+                ),
+            )
+        )
 
     def plot_rec(self):
         ...
@@ -554,10 +618,13 @@ class OrbitPlot(Orbit):
 
     def animate_plot(self):
         SC_varied = self.vary_sc()
-        frames = [go.Frame(data=[go.Scatter3d(x=i[0],y = i[1],z = i[2],visible = True,connectgaps=False,mode="markers",marker=dict(size=3, color="black",))]) for i in SC_varied]
+        frames = [go.Frame(data=[go.Scatter3d(x=i[0], y=i[1], z=i[2], visible=True, connectgaps=False, mode="markers",
+                                               marker=dict(size=5, color='blue', symbol='square', line = dict(color='rgb(255,255,255)',width=1)))]) for i in SC_varied]
+        # 'rgb(0,131,255)'
         print(frames)
         self.plot_moon()
         self.fig.frames = frames
+        # self.fig.frames = frames
 
     def add_slider(self):
         # Create and add slider

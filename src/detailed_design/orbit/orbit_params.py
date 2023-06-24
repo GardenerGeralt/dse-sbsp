@@ -62,20 +62,20 @@ for i in range(len(SMA_range)):
     ECC_range[i] = float(ECC_range[i])
     INC_range[i] = float(np.pi - INC_range[i])
     AOP_range[i] = float(AOP_range[i])
-# RAAN = 0
-# orbpar = [SMA_range[2922], ECC_range[2922], INC_range[2922], RAAN, AOP_range[2922]]
-
+RAAN = 0
+orbpar = [SMA_range[0], ECC_range[0], np.pi - INC_range[0], RAAN, AOP_range[0]]
+orbpar = [SMA_range[0], 0.2, np.pi - deg2rad(75), RAAN, AOP_range[0]]
 ###############################################################
 
 # Satellite params
-n_sat = 154
+n_sat = 30
 
 # Transmitter-receiver params
 trans_angle = deg2rad(68.2)
 pointing_acc = 6.5 * 10**-6     #[rad]
 
 # Resolution
-res_t = 500
+res_t = 10000
 #res_e = 5
 res_e = 36
 #res_e = 1

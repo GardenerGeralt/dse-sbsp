@@ -156,8 +156,8 @@ def four_plots(x_data, y_data, labels=(None, None, None, None), x_titles='x axis
         Titles of y-axes. Should be 1 or 4.
         Please include units.
     """
-    x_data = reformat_data(x_data)
-    y_data = reformat_data(y_data)
+    # x_data = reformat_data(x_data)
+    # y_data = reformat_data(y_data)
 
     x_len = len(x_data)
     y_len = len(y_data)
@@ -211,6 +211,24 @@ def four_plots(x_data, y_data, labels=(None, None, None, None), x_titles='x axis
                   row=2, col=2)
     fig.update_xaxes(row=2, col=2, title_text=x_titles[3])
     fig.update_yaxes(row=2, col=2, title_text=y_titles[3])
+
+    fig.add_trace(go.Scatter(x=x_data[4], y=y_data[4, 0],
+                             line=dict(color=f'rgb{COLORS_FADED[4]}'), name=labels[4]),
+                  row=3, col=1)
+    fig.add_trace(go.Scatter(x=x_data[4], y=y_data[4, 1],
+                             line=dict(color='black', dash='dash'), name='Average'),
+                  row=3, col=1)
+    fig.update_xaxes(row=3, col=1, title_text=x_titles[4])
+    fig.update_yaxes(row=3, col=1, title_text=y_titles[4])
+
+    fig.add_trace(go.Scatter(x=x_data[5], y=y_data[5, 0],
+                             line=dict(color=f'rgb{COLORS_FADED[5]}'), name=labels[5]),
+                  row=3, col=2)
+    fig.add_trace(go.Scatter(x=x_data[5], y=y_data[5, 1],
+                             line=dict(color='black', dash='dash'), name='Average'),
+                  row=3, col=2)
+    fig.update_xaxes(row=3, col=2, title_text=x_titles[5])
+    fig.update_yaxes(row=3, col=2, title_text=y_titles[5])
 
     fig.update_layout(template="ggplot2", showlegend=True)
     font = dict(

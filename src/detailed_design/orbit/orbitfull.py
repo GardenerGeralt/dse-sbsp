@@ -34,7 +34,9 @@ class Orbit:
         self.RAAN = RAAN
         self.AOP = AOP
 
-        self.T = 2 * np.pi * np.sqrt(self.SMA**3 / mu_M)
+        # self.T = 2 * np.pi * np.sqrt(self.SMA**3 / mu_M)
+        self.T = 75713.80810733339
+
         self.t_array = np.arange(
             0, self.T * (1 + 1 / res_t), self.T / res_t
         )  # what is the 1/res_t for?
@@ -103,42 +105,42 @@ class Orbit:
         self.max_eclipse_time = 0
         self.max_eclipse_velocity = 0
 
-        # d = []
-        # phi = []
-        # for theta_s in range(0, 360 + res_e, res_e):
-        #     theta_s = deg2rad(theta_s)
-        #     print(str(round(theta_s / (2 * np.pi) * 100, 1)) + " %")
-        #     for theta_i in np.linspace(-declination,declination,5):
-        #         for i in range(len(self.orbit[0])):
-        #             x_sat, y_sat, z_sat = self.orbit[0][i], self.orbit[1][i], self.orbit[2][i]
-        #             x_i = (x_sat + tan(theta_s) * y_sat) / (1 + (tan(theta_s)) ** 2)
-        #             y_i = tan(theta_s) * x_i
-        #
-        #             d_i = np.sqrt((x_sat - x_i) ** 2 + (y_sat - y_i) ** 2 + (z_sat - np.sqrt(x_sat**2 + y_sat**2)*sin(theta_i)) ** 2)
-        #             d.append(d_i)
-        #
-        #             phi_i = np.arctan2(y_sat, x_sat)
-        #             if phi_i < 0:
-        #                 phi_i = 2 * np.pi + phi_i
-        #             phi.append(phi_i)
-        #
-        #         ecl = np.where((d < np.ones(np.shape(d)) * R_M) & (phi > np.ones(np.shape(phi)) * (theta_s + np.pi / 2)) & (
-        #               phi < np.ones(np.shape(phi)) * (theta_s + 3 * np.pi / 2)))
-        #         if ecl[0].size > 0:
-        #             # Max eclipse time
-        #             eclipse_time = self.t_array[ecl][-1] - self.t_array[ecl][0]
-        #             if eclipse_time > self.max_eclipse_time:
-        #                 self.max_eclipse_time = eclipse_time
-        #
-        #             # Max eclipse velocity
-        #             for j in range(0, -2, -1):
-        #                 r_j = np.sqrt(self.orbit[0][ecl[0][j]] ** 2 + self.orbit[1][ecl[0][j]] ** 2 + self.orbit[2][ecl[0][j]] ** 2)
-        #                 v_j = np.sqrt(mu_M * (2 / r_j - 1 / SMA))
-        #                 if v_j > self.max_eclipse_velocity:
-        #                     self.max_eclipse_velocity = v_j
-        #
-        #         d = []
-        #         phi = []
+        d = []
+        phi = []
+        for theta_s in range(0, 360 + res_e, res_e):
+            theta_s = deg2rad(theta_s)
+            # print(str(round(theta_s / (2 * np.pi) * 100, 1)) + " %")
+            for theta_i in np.linspace(-declination,declination,5):
+                for i in range(len(self.orbit[0])):
+                    x_sat, y_sat, z_sat = self.orbit[0][i], self.orbit[1][i], self.orbit[2][i]
+                    x_i = (x_sat + tan(theta_s) * y_sat) / (1 + (tan(theta_s)) ** 2)
+                    y_i = tan(theta_s) * x_i
+
+                    d_i = np.sqrt((x_sat - x_i) ** 2 + (y_sat - y_i) ** 2 + (z_sat - np.sqrt(x_sat**2 + y_sat**2)*sin(theta_i)) ** 2)
+                    d.append(d_i)
+
+                    phi_i = np.arctan2(y_sat, x_sat)
+                    if phi_i < 0:
+                        phi_i = 2 * np.pi + phi_i
+                    phi.append(phi_i)
+
+                ecl = np.where((d < np.ones(np.shape(d)) * R_M) & (phi > np.ones(np.shape(phi)) * (theta_s + np.pi / 2)) & (
+                      phi < np.ones(np.shape(phi)) * (theta_s + 3 * np.pi / 2)))
+                if ecl[0].size > 0:
+                    # Max eclipse time
+                    eclipse_time = self.t_array[ecl][-1] - self.t_array[ecl][0]
+                    if eclipse_time > self.max_eclipse_time:
+                        self.max_eclipse_time = eclipse_time
+
+                    # Max eclipse velocity
+                    for j in range(0, -2, -1):
+                        r_j = np.sqrt(self.orbit[0][ecl[0][j]] ** 2 + self.orbit[1][ecl[0][j]] ** 2 + self.orbit[2][ecl[0][j]] ** 2)
+                        v_j = np.sqrt(mu_M * (2 / r_j - 1 / SMA))
+                        if v_j > self.max_eclipse_velocity:
+                            self.max_eclipse_velocity = v_j
+
+                d = []
+                phi = []
 
         self.ecl_idx = np.where(
             (self.orbit[0] < 0) & (np.sqrt(self.orbit[1] ** 2 + self.orbit[2] ** 2) < R_M)

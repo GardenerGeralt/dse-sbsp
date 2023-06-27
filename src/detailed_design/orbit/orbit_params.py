@@ -13,12 +13,13 @@ lim_trans = 14150           # [km]
 
 # Orbital params
 #Input
-# SMA = 8934.369696969698
-# ECC = 0.7437844582105605
+SMA = 8934.369696969698
+ECC = 0.7437844582105605
+INC = 2.115021720825856
 # INC = np.pi - 2.115021720825856
-# AOP = deg2rad(90)
-# RAAN = deg2rad(0)  # [rad]
-# orbpar = [SMA, ECC, INC, RAAN, AOP]
+AOP = deg2rad(90)
+RAAN = deg2rad(0)  # [rad]
+orbpar = [SMA, ECC, INC, RAAN, AOP]
 
 #Average
 # SMA = 8930.43325472
@@ -50,25 +51,25 @@ lim_trans = 14150           # [km]
 # orbpar = [SMA, ECC, INC, RAAN, AOP]
 
 #################  Oscillations min-max  #######################
-path = r'{}'.format("oscillation.csv")
-df = pd.read_csv(path,delim_whitespace=True,header=None)
-SMA_range = np.array(df[:][1][1:])
-ECC_range = np.array(df[:][2][1:])
-INC_range = deg2rad(np.array(df[:][3][1:]))
-AOP_range = deg2rad(np.array(df[:][5][1:]))
-
-for i in range(len(SMA_range)):
-    SMA_range[i] = float(SMA_range[i])
-    ECC_range[i] = float(ECC_range[i])
-    INC_range[i] = float(np.pi - INC_range[i])
-    AOP_range[i] = float(AOP_range[i])
-RAAN = 0
-orbpar = [SMA_range[0], ECC_range[0], np.pi - INC_range[0], RAAN, AOP_range[0]]
-orbpar = [SMA_range[0], 0.2, np.pi - deg2rad(75), RAAN, AOP_range[0]]
+# path = r'{}'.format("oscillation.csv")
+# df = pd.read_csv(path,delim_whitespace=True,header=None)
+# SMA_range = np.array(df[:][1][1:])
+# ECC_range = np.array(df[:][2][1:])
+# INC_range = deg2rad(np.array(df[:][3][1:]))
+# AOP_range = deg2rad(np.array(df[:][5][1:]))
+#
+# for i in range(len(SMA_range)):
+#     SMA_range[i] = float(SMA_range[i])
+#     ECC_range[i] = float(ECC_range[i])
+#     INC_range[i] = float(np.pi - INC_range[i])
+#     AOP_range[i] = float(AOP_range[i])
+# RAAN = 0
+# orbpar = [SMA_range[0], ECC_range[0], np.pi - INC_range[0], RAAN, AOP_range[0]]
+# orbpar = [SMA_range[0], 0.2, np.pi - deg2rad(75), RAAN, AOP_range[0]]
 ###############################################################
 
 # Satellite params
-n_sat = 30
+n_sat = 133
 
 # Transmitter-receiver params
 trans_angle = deg2rad(68.2)

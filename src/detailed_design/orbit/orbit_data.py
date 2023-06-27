@@ -7,6 +7,12 @@ from src.plotting.plots import line_plot
 def Extract(lst,idx1,idx2):
     return [item[idx1][idx2] for item in lst]
 
+def reject_outliers(data, m = 2.):
+    d = np.abs(data - np.median(data))
+    mdev = np.median(d)
+    s = d/mdev if mdev else np.zeros(len(d))
+    return data[s<m]
+
 path = r'{}'.format("oscillation.csv")
 df = pd.read_csv(path,delim_whitespace=True,header=None)
 DAYS = np.array(df[:][0][1:])
@@ -17,15 +23,19 @@ DAYS = np.array(df[:][0][1:])
 # [orbplot.f_bd, orbplot.D_rec, orbplot.max_eclipse_time, orbplot.max_eclipse_velocity]
 
 # Load data
-data = pickle.load(open('orbit_data_6.p', 'rb'))
-PARAM1 = np.array(Extract(data,1,6))
-PARAM2 = np.array(Extract(data,1,10))
-PARAM3 = 100*np.array(Extract(data,1,0))
+data = pickle.load(open('orbit_data_4.p', 'rb'))
+PARAM1 = np.array(Extract(data,1,1))
+PARAM2 = np.array(Extract(data,1,2))
+PARAM3 = np.array(Extract(data,1,11))
+PARAM4 = np.array(Extract(data,1,12))
+PARAM5 = np.array(Extract(data,1,13))
+#reject_outliers(PARAM3)
 #print(np.average(PARAM))
 
+line_plot(x_data=[(DAYS[:]/365.25), (DAYS[:]/365.25), (DAYS[:]/365.25), (DAYS[:]/365.25), (DAYS[:]/365.25)],
+          y_data=[PARAM1[:], PARAM2[:], PARAM3[:], PARAM4[:], PARAM5[:]],
+          labels=['Periapsis altitude', 'Apoapsis altitude', 'Min. transmission altitude', 'Avg. transmission altitude', 'Max. transmission altitude'],
+          x_title=r'$\text{{{}}} \;[-] $'.format('Orbit efficiency score '),
+          y_title=r'$\text{{{}}} \;[-] $'.format('Number of orbits '))
 
 
-# line_plot(x_data=[(DAYS[:]/365.25), (DAYS[:]/365.25), (DAYS[:]/365.25)], y_data=[PARAM1[:], PARAM2[:], PARAM3[:]],
-#           labels=['Transmission efficiency', 'Incidence efficiency', 'Total efficiency'],
-#           x_title=r'$\text{{{}}} t\;[years] $'.format('Time (from 01-01-2030) '),
-#           y_title=r'$\text{{{}}} \eta\;[\%] $'.format('Efficiency '))

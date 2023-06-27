@@ -68,10 +68,10 @@ for name in names:
     y_titles = [r'$\text{{{}}} a\;[km] $'.format('Semi-major axis '), r'$\text{{{}}} e\;[-] $'.format('Eccentricity '), r'$\text{{{}}} i\;[deg] $'.format('Inclination '), r'$\text{{{}}} \omega\;[deg] $'.format('Argument of periapsis ')]
     print(y_data[0][0])
     four_plots(x_data, y_data, x_titles=x_titles, y_titles=y_titles, labels=['Oscillation', 'Oscillation', 'Oscillation', 'Oscillation'])
-    x_data_5y = x_data[:, 0:int(365.25*5)]
-    y_data_5y = y_data[:, :, 0:int(365.25*5)]
+    x_data_5y = x_data[:, 0:int(365.25)]
+    y_data_5y = y_data[:, :, 0:int(365.25)]
     print(x_data_5y)
     four_plots(x_data_5y, y_data_5y, x_titles=x_titles, y_titles=y_titles, labels=['Oscillation', 'Oscillation', 'Oscillation', 'Oscillation'])
-    line_plot(x_data=[(DAYS[0:366] / 365.25), (DAYS[0:366] / 365.25)], y_data=[SMA[0:366], SMA_avg[0:366]], labels=['Oscillation', 'Average'],
-              x_title=r'$\text{{{}}} t\;[years] $'.format('Time (from 01-01-2030) '),
-              y_title=r'$\text{{{}}} a\;[km] $'.format('Semi-major axis '))
+    # line_plot(x_data=[(DAYS[0:366] / 365.25), (DAYS[0:366] / 365.25)], y_data=[SMA[0:366], SMA_avg[0:366]], labels=['Oscillation', 'Average'],
+    #           x_title=r'$\text{{{}}} t\;[years] $'.format('Time (from 01-01-2030) '),
+    #           y_title=r'$\text{{{}}} a\;[km] $'.format('Semi-major axis '))

@@ -75,7 +75,10 @@ def six_plots(x_data, y_data, labels=(None, None, None, None, None, None), x_tit
                              line=dict(color=f'rgb{COLORS_FADED[0]}'), name=labels[0]),
                   row=1, col=1)
     fig.add_trace(go.Scatter(x=x_data[0], y=y_data[0][1],
-                             line=dict(color='grey'), name='Average'),
+                             line=dict(color='grey',dash='dash'), name='Average'),
+                  row=1, col=1)
+    fig.add_trace(go.Scatter(x=x_data[0], y=y_data[0][2],
+                             line=dict(color='grey', dash='dash'), name='Average'),
                   row=1, col=1)
     fig.update_xaxes(row=1, col=1, title_text=x_titles[0])
     fig.update_yaxes(row=1, col=1, title_text=y_titles[0])
@@ -84,7 +87,10 @@ def six_plots(x_data, y_data, labels=(None, None, None, None, None, None), x_tit
                              line=dict(color=f'rgb{COLORS_FADED[1]}'), name=labels[1]),
                   row=1, col=2)
     fig.add_trace(go.Scatter(x=x_data[1], y=y_data[1][1],
-                             line=dict(color='black', dash='dash'), name='Average'),
+                             line=dict(color='grey', dash='dash'), name='Average'),
+                  row=1, col=2)
+    fig.add_trace(go.Scatter(x=x_data[1], y=y_data[1][2],
+                             line=dict(color='grey', dash='dash'), name='Average'),
                   row=1, col=2)
     fig.update_xaxes(row=1, col=2, title_text=x_titles[1])
     fig.update_yaxes(row=1, col=2, title_text=y_titles[1])
@@ -93,6 +99,9 @@ def six_plots(x_data, y_data, labels=(None, None, None, None, None, None), x_tit
                              line=dict(color=f'rgb{COLORS_FADED[2]}'), name=labels[2]),
                   row=2, col=1)
     fig.add_trace(go.Scatter(x=x_data[2], y=y_data[2, 1],
+                             line=dict(color='grey'), name='Average'),
+                  row=2, col=1)
+    fig.add_trace(go.Scatter(x=x_data[2], y=y_data[2, 2],
                              line=dict(color='grey'), name='Average'),
                   row=2, col=1)
     fig.update_xaxes(row=2, col=1, title_text=x_titles[2])
@@ -104,6 +113,9 @@ def six_plots(x_data, y_data, labels=(None, None, None, None, None, None), x_tit
     fig.add_trace(go.Scatter(x=x_data[3], y=y_data[3, 1],
                              line=dict(color='grey'), name='Average'),
                   row=2, col=2)
+    fig.add_trace(go.Scatter(x=x_data[3], y=y_data[3, 2],
+                             line=dict(color='grey'), name='Average'),
+                  row=2, col=2)
     fig.update_xaxes(row=2, col=2, title_text=x_titles[3])
     fig.update_yaxes(row=2, col=2, title_text=y_titles[3])
 
@@ -113,6 +125,9 @@ def six_plots(x_data, y_data, labels=(None, None, None, None, None, None), x_tit
     fig.add_trace(go.Scatter(x=x_data[4], y=y_data[4, 1],
                              line=dict(color='grey'), name='Average'),
                   row=3, col=1)
+    fig.add_trace(go.Scatter(x=x_data[4], y=y_data[4, 2],
+                             line=dict(color='grey'), name='Average'),
+                  row=3, col=1)
     fig.update_xaxes(row=3, col=1, title_text=x_titles[4])
     fig.update_yaxes(row=3, col=1, title_text=y_titles[4])
 
@@ -120,6 +135,9 @@ def six_plots(x_data, y_data, labels=(None, None, None, None, None, None), x_tit
                              line=dict(color=f'rgb{COLORS_FADED[5]}'), name=labels[5]),
                   row=3, col=2)
     fig.add_trace(go.Scatter(x=x_data[5], y=y_data[5, 1],
+                             line=dict(color='grey'), name='Average'),
+                  row=3, col=2)
+    fig.add_trace(go.Scatter(x=x_data[5], y=y_data[5, 2],
                              line=dict(color='grey'), name='Average'),
                   row=3, col=2)
     fig.update_xaxes(row=3, col=2, title_text=x_titles[5])
@@ -212,23 +230,23 @@ def four_plots(x_data, y_data, labels=(None, None, None, None), x_titles='x axis
     fig.update_xaxes(row=2, col=2, title_text=x_titles[3])
     fig.update_yaxes(row=2, col=2, title_text=y_titles[3])
 
-    fig.add_trace(go.Scatter(x=x_data[4], y=y_data[4, 0],
-                             line=dict(color=f'rgb{COLORS_FADED[4]}'), name=labels[4]),
-                  row=3, col=1)
-    fig.add_trace(go.Scatter(x=x_data[4], y=y_data[4, 1],
-                             line=dict(color='black', dash='dash'), name='Average'),
-                  row=3, col=1)
-    fig.update_xaxes(row=3, col=1, title_text=x_titles[4])
-    fig.update_yaxes(row=3, col=1, title_text=y_titles[4])
-
-    fig.add_trace(go.Scatter(x=x_data[5], y=y_data[5, 0],
-                             line=dict(color=f'rgb{COLORS_FADED[5]}'), name=labels[5]),
-                  row=3, col=2)
-    fig.add_trace(go.Scatter(x=x_data[5], y=y_data[5, 1],
-                             line=dict(color='black', dash='dash'), name='Average'),
-                  row=3, col=2)
-    fig.update_xaxes(row=3, col=2, title_text=x_titles[5])
-    fig.update_yaxes(row=3, col=2, title_text=y_titles[5])
+    # fig.add_trace(go.Scatter(x=x_data[4], y=y_data[4, 0],
+    #                          line=dict(color=f'rgb{COLORS_FADED[4]}'), name=labels[4]),
+    #               row=3, col=1)
+    # fig.add_trace(go.Scatter(x=x_data[4], y=y_data[4, 1],
+    #                          line=dict(color='black', dash='dash'), name='Average'),
+    #               row=3, col=1)
+    # fig.update_xaxes(row=3, col=1, title_text=x_titles[4])
+    # fig.update_yaxes(row=3, col=1, title_text=y_titles[4])
+    #
+    # fig.add_trace(go.Scatter(x=x_data[5], y=y_data[5, 0],
+    #                          line=dict(color=f'rgb{COLORS_FADED[5]}'), name=labels[5]),
+    #               row=3, col=2)
+    # fig.add_trace(go.Scatter(x=x_data[5], y=y_data[5, 1],
+    #                          line=dict(color='black', dash='dash'), name='Average'),
+    #               row=3, col=2)
+    # fig.update_xaxes(row=3, col=2, title_text=x_titles[5])
+    # fig.update_yaxes(row=3, col=2, title_text=y_titles[5])
 
     fig.update_layout(template="ggplot2", showlegend=True)
     font = dict(

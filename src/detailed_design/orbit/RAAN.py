@@ -22,9 +22,10 @@ for name in names:
     RATE = np.gradient(RATE)
     print("Average nodal precession = "+str(round(np.average(RATE),4))+" [deg/day]")
 
-    line_plot(x_data=DAYS/365.25, y_data=RAAN, labels=['Nodal precession rate'],
+    line_plot(x_data=DAYS/365.25, y_data=RAAN,
               x_title=r'$\text{{{}}} t\;[years] $'.format('Time from 01-01-2030 '),
-              y_title=r'$\text{{{}}} \omega_p\;[deg/day] $'.format('Nodal precession rate '))
+              # y_title=r'$\text{{{}}} \omega_p\;[deg/day] $'.format('Nodal precession rate '))
+              y_title = r'$\text{{{}}} \Omega\;[deg] $'.format('Right ascension of the ascending node '))
 
 
 

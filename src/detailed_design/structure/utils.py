@@ -1,4 +1,5 @@
 import numpy as np
+import scipy.optimize as opt
 import multiprocessing as mp
 from src.gen_eng.materials import StructuralMaterial
 from src.plotting import plots as plt
@@ -71,15 +72,12 @@ class Loading:
         return self._shear_force(z, thickness, structure, safety_factor) / structure.cs_area(thickness)
 
     def bending_stress(self, z, y_mesh, thickness, structure, safety_factor):
-        a = self._bending_moment(z, thickness, structure, safety_factor)
-        b = y_mesh
-        c = structure.i_xx(thickness)
         return self._bending_moment(z, thickness, structure, safety_factor) * y_mesh / structure.i_xx(thickness)
 
-    def _combined_stress(self, z, y_mesh, thickness, structure, safety_factor):
-        comb_strss = self.normal_stress(z, thickness, structure, safety_factor) + \
-                     self.bending_stress(z, y_mesh, thickness, structure, safety_factor)
-        comb_strss[:, 1:-1, 1:-1] = 0
+    def combined_stress(self, z, y_mesh, thickness, structure, safety_factor):
+        comb_strss = np.sqrt((self.normal_stress(z, thickness, structure, safety_factor) +
+                              self.bending_stress(z, y_mesh, thickness, structure, safety_factor)) ** 2 +
+                             3 * self.shear_stress(z, thickness, structure, safety_factor) ** 2)
         return comb_strss
 
     def volume_stress(self, thickness, structure, safety_factor, mesh_size, return_mesh=False):
@@ -87,7 +85,8 @@ class Loading:
                            np.linspace(-structure.width / 2, structure.width / 2, mesh_size[0]),
                            np.linspace(-structure.width / 2, structure.width / 2, mesh_size[1]), indexing='ij')
         z_mesh, x_mesh, y_mesh = mesh
-        comb_strss = self._combined_stress(z_mesh, y_mesh, thickness, structure, safety_factor)
+        comb_strss = self.combined_stress(z_mesh, y_mesh, thickness, structure, safety_factor)
+        comb_strss[:, 1:-1, 1:-1] = 0
         if return_mesh:
             return comb_strss, mesh
         else:
@@ -131,8 +130,9 @@ class Structure:
             return buckling_coef * np.pi ** 2 * self.material.elastic_mod / \
                 (12 * (1 - self.material.poisson_ratio ** 2)) * (thickness / self.width) ** 2
 
-        def _crippling():   # TODO: replace magic numbers with variables
-            return self.material.yield_strength * 0.8 * (_crit_buckling() / self.material.yield_strength) ** (1 - 0.6)
+        def _crippling():
+            return self.material.yield_strength * self.material.alpha_crippling_correction * \
+                (_crit_buckling() / self.material.yield_strength) ** (1 - self.material.n_buckling_correction)
 
         buckling_loads = [_crit_buckling(), _crippling(), self.material.yield_strength]
         return np.min(buckling_loads)
@@ -143,13 +143,43 @@ class Structure:
         return f_load_mass
 
     def lat_natural_freq(self, thickness, loading):
+        # f_struct_mass = 0.56 * (self.material.elastic_mod * self.i_xx(thickness) /
+        #                         ((G_ACCELERATION * loading.qs_lateral *
+        #                           self.material.density * self.cs_area(thickness)) * self.height ** 4)) ** 0.5
+        # f_load_mass = (1 / (2 * np.pi)) * (3 * self.material.elastic_mod * self.i_xx(thickness) /
+        #                                    ((G_ACCELERATION * loading.qs_lateral * self.load_mass) *
+        #                                     (self.height / 2) ** 3)) ** 0.5
         f_struct_mass = 0.56 * (self.material.elastic_mod * self.i_xx(thickness) /
-                                ((G_ACCELERATION * loading.qs_lateral *
-                                  self.material.density * self.cs_area(thickness)) * self.height ** 4)) ** 0.5
+                                ((self.material.density * self.cs_area(thickness)) * self.height ** 4)) ** 0.5
         f_load_mass = (1 / (2 * np.pi)) * (3 * self.material.elastic_mod * self.i_xx(thickness) /
-                                           ((G_ACCELERATION * loading.qs_lateral * self.load_mass) *
-                                            (self.height / 2) ** 3)) ** 0.5
+                                           (self.load_mass * (self.height / 2) ** 3)) ** 0.5
         return min(f_struct_mass, f_load_mass)
+
+    def implicit_eq(self, p, thickness):
+        char_length = self.height / 2
+        b = np.sqrt(1 / (self.material.elastic_mod * self.i_xx(thickness)) *
+                    self.load_mass * self.cs_area(thickness) * char_length**4 * p**2)
+        shape_factor = (20 + self.material.poisson_ratio) / (48 - 39 * self.material.poisson_ratio)
+        r = np.sqrt(self.i_xx(thickness) / self.cs_area(thickness) / char_length)
+        s = np.sqrt(self.material.elastic_mod * self.i_xx(thickness) /
+                    (shape_factor * self.cs_area(thickness) * self.material.shear_mod * char_length ** 2))
+        _left = r ** 2 + s ** 2
+        _right = np.sqrt((r ** 2 - s ** 2) ** 2 + 4 / (b ** 2))
+        alpha = 1 / np.sqrt(2) * np.sqrt(-_left + _right)
+        beta = 1 / np.sqrt(2) * np.sqrt(_left + _right)
+        if _right > _left:
+            return 2 + (b ** 2 * (r ** 2 - s ** 2) ** 2 + 2) * np.cosh(b * alpha) * np.cos(b * beta) - \
+                b * (r ** 2 + s ** 2) / np.sqrt(1 - b ** 2 * r ** 2 * s ** 2) * np.sinh(b * alpha) * np.sin(b * beta)
+        elif _right < _left:
+            return 2 + (b ** 2 * (r ** 2 - s ** 2) ** 2 + 2) * np.cos(b * np.conj(alpha)) * np.cos(b * beta) - \
+                b * (r ** 2 + s ** 2) / np.sqrt(b ** 2 * r ** 2 * s ** 2 - 1) * np.sin(b * np.conj(alpha)) * np.sin(
+                    b * beta)
+        else:
+            raise ValueError("Something went wrong with the Timoshenko natural frequency calculation.")
+
+    def lat_natural_freq_tbt(self, thickness, loading):
+        nd_freq = opt.fsolve(lambda p: self.implicit_eq(p, thickness), 0.5)[0]
+        return nd_freq / (2 * np.pi)
 
     def structure_mass(self, thickness):
         return self.material.density * self.cs_area(thickness) * self.height

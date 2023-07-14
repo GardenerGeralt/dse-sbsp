@@ -1,6 +1,6 @@
 import pytest
 import numpy as np
-from src.prelim_design.structure import utils as ut
+from src.detailed_design.structure import utils as ut
 import src.gen_eng.materials as gem
 
 
@@ -33,7 +33,7 @@ class TestSafetyFactors:
 
 class TestLoading:
     test_safety_factors = ut.SafetyFactors(1.00, 1.25, 1.50, 1.75, 2.00, 2.25)
-    test_loading = ut.Loading(5, -2)
+    test_loading = ut.Loading(5, -2, 20, 10)
     test_material = gem.StructuralMaterial(2000, 50e9, 100e6, 150e6, 0.30, 1)
     test_structure = ut.Structure(50, test_material, name="test_structure")
     test_structure.set_dimensions(0.1, 1)
@@ -88,9 +88,9 @@ class TestLoading:
         ref_sol_1[1:-1, 1:-1, :] = 0
         ref_sol_2 = np.meshgrid([0, 0, 0], [0, 0, 0], [4706.48594, -23535.96, -51778.40594], indexing='ij')[2]
         ref_sol_2[1:-1, 1:-1, :] = 0
-        assert np.all(np.isclose(self.test_loading._combined_stress(0.2, test_y_mesh, 0.001, self.test_structure, 1.2),
+        assert np.all(np.isclose(self.test_loading.combined_stress(0.2, test_y_mesh, 0.001, self.test_structure, 1.2),
                                  ref_sol_1, rtol=1e-6))
-        assert np.all(np.isclose(self.test_loading._combined_stress(0.8, test_y_mesh, 0.001, self.test_structure, 1.2),
+        assert np.all(np.isclose(self.test_loading.combined_stress(0.8, test_y_mesh, 0.001, self.test_structure, 1.2),
                                  ref_sol_2, rtol=1e-6))
 
     def test_volume_stress(self):
@@ -148,7 +148,7 @@ class TestStructure:
 
     def test_size_structure(self):
         test_safety_factors = ut.SafetyFactors(1.00, 1.25, 1.50, 1.75, 2.00, 2.25)
-        test_loading = ut.Loading(5, -2)
+        test_loading = ut.Loading(5, -2, 20, 10)
         assert np.all(np.isclose(
             sorted(self.test_structure.size_structure(test_loading, test_safety_factors).values()),
             [0.00297979797979798, 52.38383838383838], rtol=1e-6
